@@ -77,7 +77,7 @@ public class UserController {
     UserTopicService userTopicService;
 
     @Autowired
-    UserTopicUtil userTopicUtil;
+      UserTopicUtil userTopicUtil;
 
 //    @Autowired
 //    RoleRepo roleRepo;
@@ -97,7 +97,7 @@ public class UserController {
 
     public ResponseEntity<?> assignMod(@Valid @RequestBody LoginRequest loginRequest, @PathVariable @NotNull Long userId){
         if((loginRequest.getName().equals(adminName))&&(loginRequest.getPassword().equals(adminPwd))){
-            User user = userRepo.findByUserId(userId).orElse(null);
+            User user         = userRepo.findByUserId(userId).orElse(null);
             if(user==null||!user.isActive())
                 throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
             if(user.getRole().equals(ERole.ROLE_MODERATOR)){
