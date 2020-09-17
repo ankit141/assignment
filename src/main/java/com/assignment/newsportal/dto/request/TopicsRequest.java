@@ -7,22 +7,34 @@ import java.util.List;
 public class TopicsRequest {
 
     @JsonProperty
-    private List<String> follow;
+    private String[] follow;
 
     public TopicsRequest() {
     }
 
-    public TopicsRequest(List<String> follow) {
+    public TopicsRequest(String[] follow) {
         this.follow = follow;
-
-
     }
 
-    public List<String> getFollow() {
+    public String[] getFollow() {
         return follow;
     }
 
-    public void setFollow(List<String> follow) {
+    public void setFollow(String[] follow) {
         this.follow = follow;
     }
+
+    //    public TopicsRequest(List<String> follow) {
+//        this.follow = follow;
+//
+//
+//    }
+
+//    public List<String> getFollow() {
+//        return follow;
+//    }
+//
+//    public void setFollow(List<String> follow) {
+//        this.follow = follow;
+//    }
 }

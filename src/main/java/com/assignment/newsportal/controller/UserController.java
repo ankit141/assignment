@@ -97,7 +97,7 @@ public class UserController {
 
     public ResponseEntity<?> assignMod(@Valid @RequestBody LoginRequest loginRequest, @PathVariable @NotNull Long userId){
         if((loginRequest.getName().equals(adminName))&&(loginRequest.getPassword().equals(adminPwd))){
-            User user         = userRepo.findByUserId(userId).orElse(null);
+            User user = userRepo.findByUserId(userId).orElse(null);
             if(user==null||!user.isActive())
                 throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
             if(user.getRole().equals(ERole.ROLE_MODERATOR)){
@@ -265,22 +265,33 @@ public class UserController {
 //        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
         UserTopicMap userTopic=userTopicService.add(userId,topicId);
-        TopicDTO topicDTO= new TopicDTO(topicId,userTopic.getTopic());
-
+//        TopicDTO topicDTO= new TopicDTO(topicId,userTopic.getTopic());
+        topicDTO.setTopicId(topicId);
+        topicDTO.setTopic(userTopic.getTopic());
         return new ResponseEntity<>(topicDTO,HttpStatus.OK);
     }
 
-//    @PostMapping(value="/topics")
-//    @PreAuthorize("hasRole('CONSUMER')")
-//    public ResponseEntity<?> addMulTopics(@RequestHeader("Authorization") String token, @RequestBody @Valid TopicsRequest topicsRequest, Pageable pageable){
+    @PostMapping(value="/topics")
+    @PreAuthorize("hasRole('CONSUMER')")
+    public ResponseEntity<?> addMulTopics(/*@RequestHeader("Authorization") String token,*/@RequestBody @Valid TopicsRequest topicsRequest, Pageable pageable){
 //        String jwt= token.substring(7);
 //        Long userId=Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
-//
-//        List<String> topics= topicsRequest.getFollow();
-//        List<PostDTO> postDTOS = postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
-//        return new ResponseEntity<>(postDTOS, HttpStatus.OK);
-//
-//    }
+
+        Long userId= jwtUtils.getSubject();
+        String[] topics= topicsRequest.getFollow();
+        List<TopicDTO>followedNow= new List<TopicDTO>() {
+        }
+        for(int i=0;i<topics.length; i++){
+            UserTopicMap userTopic=userTopicService.add(userId,topics[i]);
+//            TopicDTO topicDTO= new TopicDTO(userTopicMap.getTopicId(), userTopicMap.getTopic());
+            topicDTO.setTopicId(userTopic.getTopicId());
+            topicDTO.setTopic(userTopic.getTopic());
+
+        }
+        List<PostDTO> postDTOS = postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
+        return new ResponseEntity<>(postDTOS, HttpStatus.OK);
+
+    }
 
 
 
