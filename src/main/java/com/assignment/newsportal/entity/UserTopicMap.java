@@ -8,7 +8,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name="user_topic_map")
-public class UserTopicMap {
+public class UserTopicMap extends Common{
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumns({
 //            @JoinColumn(name="user_id", referencedColumnName="user_id"),
@@ -41,6 +41,9 @@ public class UserTopicMap {
 
     @Column(name="is_active")
     private Boolean isActive;
+
+
+
 
     public UserTopicMap() {
     }

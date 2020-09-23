@@ -8,6 +8,7 @@ import com.assignment.newsportal.dto.response.MessageResponse;
 import com.assignment.newsportal.entity.Hashtag;
 import com.assignment.newsportal.entity.Post;
 import com.assignment.newsportal.entity.Topic;
+import com.assignment.newsportal.security.jwt.JwtUtils;
 import com.assignment.newsportal.service.TopicService;
 import com.assignment.newsportal.util.HashtagUtil;
 import com.assignment.newsportal.util.TopicUtil;
@@ -37,12 +38,16 @@ public class TopicController {
     @Autowired
     HashtagUtil hashtagUtil;
 
+    @Autowired
+    JwtUtils jwtUtils;
+
 
     @PostMapping(value="/create")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<TopicDTO> createTopic(@Valid @RequestBody TopicDTO topicDTO){
+    public ResponseEntity<TopicDTO> createTopics(@Valid @RequestBody TopicDTO topicDTO){
+        Long userId= jwtUtils.getSubject();
       Topic topic=topicUtil.convertToEntity(topicDTO);
-      topic=topicService.createTopic(topic);
+      topic=topicService.createTopic(topic,userId);
 
       return new ResponseEntity<>(topicUtil.convertToDTO(topic), HttpStatus.OK);
 
@@ -59,14 +64,17 @@ public class TopicController {
     @DeleteMapping(value="/{topicId}")
     @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<?> deleteTopic(@PathVariable @NotNull Long topicId){
-        topicService.remove(topicId);
+        Long userId= jwtUtils.getSubject();
+        topicService.remove(topicId,userId);
         return ResponseEntity.ok(new MessageResponse("Topic deleted."));
     }
 
     @PutMapping(value="/{topicId}")
     @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<?> updateTopic(@PathVariable @NotNull Long topicId, @RequestBody TopicDTO topicDTO){
-        Topic topic=topicService.updateTopic(topicId,topicDTO);
+
+        Long userId= jwtUtils.getSubject();
+        Topic topic=topicService.updateTopic(topicId,topicDTO,userId);
 
         return new ResponseEntity<>(topicUtil.convertToDTO(topic),HttpStatus.OK);
 

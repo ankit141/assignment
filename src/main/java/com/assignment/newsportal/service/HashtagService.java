@@ -13,8 +13,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class HashtagService {
 
     @Autowired
@@ -29,7 +30,7 @@ public class HashtagService {
     public Hashtag createHashtag(HashtagDTO hashtagDTO, Long topicId) {
         if(hashtagDTO.getHashtag().equals(""))
             throw new MissingDetailException("Hashtag is compulsory.");
-        Topic topic= topicRepo.findByTopicId(topicId).orElse(null);
+        Topic topic= topicRepo.findBytopicid(topicId).orElse(null);
 
         if(topic==null||!topic.getActive()){
             throw new NotFoundException("Topic with id "+topicId+" doesn't exist.");
