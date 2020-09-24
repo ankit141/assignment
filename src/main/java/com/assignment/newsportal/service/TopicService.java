@@ -14,26 +14,34 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 
-
-@Component
+@Service
 public class TopicService {
 
     @Autowired
     TopicRepo topicRepo;
 
 
-    public Topic createTopic(Topic topic) {
-        if (topic.getTopic().equals(""))
+    public Topic createTopic(Topic topicArg,Long userId) {
+        if (topicArg.getTopic().equals(""))
             throw new MissingDetailException("Topic is mandatory.");
-        Topic topic1 = topicRepo.findByTopic(topic.getTopic()).orElse(null);
-        if (topic1 == null || !topic1.getActive()) {
+        Topic topic = topicRepo.findBytopic(topicArg.getTopic()).orElse(null);
+        if ((topic != null)&&(topic.getActive())) {
+            throw new DuplicateDataException("Topic is already present.");
+
+        }
+        if((topic!=null)&&(topic.getActive()==false)) {
             topic.setActive(true);
+            topic.setCreatedBy(userId);
+            topic.setUpdatedBy(userId);
             return topicRepo.save(topic);
         }
-        else
-        throw new DuplicateDataException("Topic is already present.");
+        topicArg.setActive(true);
+        topicArg.setCreatedBy(userId);
+        topicArg.setUpdatedBy(userId);
+        return topicRepo.save(topicArg);
     }
 
     public Page<Topic> getTopics(Pageable pageable) {
@@ -42,16 +50,17 @@ public class TopicService {
 
 
 
-    public void remove(Long topicId) {
-        Topic topic = topicRepo.findByTopicId(topicId).orElse(null);
+    public void remove(Long topicId,Long userId) {
+        Topic topic = topicRepo.findBytopicid(topicId).orElse(null);
         if(topic==null||!topic.getActive())
                 throw new NotFoundException("Topic Not Found with Id: " + topicId);
         topic.setActive(false);
+        topic.setUpdatedBy(userId);
         topicRepo.save(topic);
     }
 
-    public Topic updateTopic(Long topicId, TopicDTO topicDTO) {
-        Topic topic= topicRepo.findByTopicId(topicId).orElse(null);
+    public Topic updateTopic(Long topicId, TopicDTO topicDTO,Long userId) {
+        Topic topic= topicRepo.findBytopicid(topicId).orElse(null);
         if(topic==null||!topic.getActive())
             throw new NotFoundException("Topic Not Found with Id: " + topicId);
         if(topicDTO.getTopic().equals("")){
@@ -60,11 +69,12 @@ public class TopicService {
         if(topic.getTopic().equals(topicDTO.getTopic()))
             throw new DuplicateDataException("Topic is already present.");
         topic.setTopic(topicDTO.getTopic());
+        topic.setUpdatedBy(userId);
         return topicRepo.save(topic);
     }
 
     public Page<Hashtag> getTopicHashtags(Long topicId, Pageable pageable) {
-        Topic topic=topicRepo.findByTopicId(topicId).orElse(null);
+        Topic topic=topicRepo.findBytopicid(topicId).orElse(null);
         if(topic==null||!topic.getActive())
             throw new NotFoundException("Topic with id "+topicId+" does not exist");
         return topicRepo.getTopicHashtags(topicId, pageable);

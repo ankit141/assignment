@@ -9,7 +9,9 @@ import com.assignment.newsportal.dto.response.MessageResponse;
 import com.assignment.newsportal.entity.ERole;
 import com.assignment.newsportal.entity.Post;
 import com.assignment.newsportal.entity.User;
+import com.assignment.newsportal.entity.VoteStatus;
 import com.assignment.newsportal.repo.PostRepo;
+import com.assignment.newsportal.repo.UserRepo;
 import com.assignment.newsportal.security.jwt.JwtUtils;
 import com.assignment.newsportal.service.PostService;
 import com.assignment.newsportal.util.PostUtil;
@@ -41,6 +43,9 @@ public class PostController {
 
     @Autowired
     PostRepo postRepo;
+
+    @Autowired
+    UserRepo userRepo;
 
 
 
@@ -81,7 +86,7 @@ public class PostController {
     }
 
     @DeleteMapping(value="/post/{postId}/delete")
-    @PreAuthorize("hasRole('CONSUMER')")
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
     public ResponseEntity<?> unpublish(@PathVariable @NotNull Long postId/*,@RequestHeader("Authorization") String token*/){
 
 //        String jwt = token.substring(7);
@@ -91,33 +96,38 @@ public class PostController {
         }
 //        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
+        User user= userRepo.findByUserId(userId).orElse(null);
         Long Id=postService.findUserIdOfPost(postId);
-        if(userId!=Id)
-            return ResponseEntity.badRequest().body(new MessageResponse("Not authorized."));
-        postService.unpublish(post);
+        if((user.getRole()==ERole.ROLE_CONSUMER)&&(userId!=Id))
+            return new ResponseEntity<>(new MessageResponse("You cannot delete other's posts."),HttpStatus.FORBIDDEN);
+        postService.unpublish(post,userId);
 
         return ResponseEntity.ok(new MessageResponse("Post deleted."));
 
     }
 
-
-    @PutMapping(value="/post/{postId}/upvote")
+    @PutMapping(value="/post/{postId}/vote")
     @PreAuthorize("hasRole('CONSUMER')")
-    public ResponseEntity<PostDTO> upvote(@PathVariable @NotNull Long postId){
+    public ResponseEntity<PostDTO> vote(@PathVariable @NotNull Long postId,@RequestHeader("Vote") Long val){
 
-        Post post=postService.upvote(postId);
+        Long userId= jwtUtils.getSubject();
+
+
+//        VoteStatus voteStatus=postService.vote(postId,val,userId);
+        Post post=postService.vote(postId,val,userId);
+//        Post post=postRepo.findByPostId(postId).orElse(null);
         return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);
 
     }
 
-    @PutMapping(value="/post/{postId}/downvote")
-    @PreAuthorize("hasRole('CONSUMER')")
-    public ResponseEntity<PostDTO> downvote(@PathVariable @NotNull Long postId){
-
-        Post post=postService.downvote(postId);
-        return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);
-
-    }
+//    @PutMapping(value="/post/{postId}/downvote")
+//    @PreAuthorize("hasRole('CONSUMER')")
+//    public ResponseEntity<PostDTO> downvote(@PathVariable @NotNull Long postId){
+//
+//        Post post=postService.downvote(postId);
+//        return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);
+//
+//    }
 
     @PutMapping(value="/post/{postId}/edit")
     @PreAuthorize("hasRole('CONSUMER')")
@@ -137,7 +147,7 @@ public class PostController {
         Long userId= jwtUtils.getSubject();
         Long Id=postService.findUserIdOfPost(postId);
         if(userId!=Id)
-            return ResponseEntity.badRequest().body(new MessageResponse("Not authorized."));
+            return new ResponseEntity<>(new MessageResponse("Not authorized."),HttpStatus.UNAUTHORIZED);
 
         post=postService.update(post,postDTO);
         return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);

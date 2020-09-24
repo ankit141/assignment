@@ -3,18 +3,26 @@ package com.assignment.newsportal.dto.request;
 import javax.validation.constraints.NotBlank;
 
 public class LoginRequest {
-    @NotBlank(message="Name is mandatory.")
-    private String name;
+    @NotBlank(message="Email is mandatory.")
+    private String email;
 
     @NotBlank(message="Password is mandatory.")
     private String password;
 
-    public String getName() {
-        return name;
+    public LoginRequest() {
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public LoginRequest(@NotBlank(message = "Email is mandatory.") String email, @NotBlank(message = "Password is mandatory.") String password) {
+        this.email = email;
+        this.password = password;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getPassword() {

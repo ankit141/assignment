@@ -9,12 +9,17 @@ import com.assignment.newsportal.entity.UserTopicMap;
 import com.assignment.newsportal.repo.TopicRepo;
 import com.assignment.newsportal.repo.UserRepo;
 import com.assignment.newsportal.repo.UserTopicRepo;
+import com.assignment.newsportal.security.jwt.AuthTokenFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-@Component
+
+@Service
 public class UserTopicService {
 
     @Autowired
@@ -26,21 +31,55 @@ public class UserTopicService {
     @Autowired
     UserRepo userRepo;
 
-    public UserTopicMap add(Long userId, Long topicId) {
-        Topic topic = topicRepo.findByTopicId(topicId).orElse(null);
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+//    public UserTopicMap add(Long userId, Long topicId) {
+//        Topic topic = topicRepo.findBytopicid(topicId).orElse(null);
+//        if (topic == null || !topic.getActive())
+//            throw new NotFoundException("Topic with id " + topicId + " doesn't exist.");
+//
+//        UserTopicMap userTopicMap=userTopicRepo.find(userId, topicId).orElse(null);
+//        if((userTopicMap!=null)&&(userTopicMap.getIsActive())) {
+//            logger.info("Topic {} is already followed by you.", );
+//            return null;
+//        }
+//
+//        if((userTopicMap!=null)&&(userTopicMap.getIsActive()==false)) {
+//
+//            userTopicMap.setIsActive(true);
+//            return userTopicRepo.save(userTopicMap);
+//
+//        }
+//        User user = userRepo.findByUserId(userId).orElse(null);
+//        userTopicMap = new UserTopicMap(userId, user.getName(), topicId, topic.getTopic(), true);
+//        return userTopicRepo.save(userTopicMap);
+//    }
+
+    public UserTopicMap add(Long userId, String name) {
+        Topic topic = topicRepo.findBytopic(name).orElse(null);
         if (topic == null || !topic.getActive())
-            throw new NotFoundException("Topic with id " + topicId + " doesn't exist.");
+            throw new NotFoundException("Topic " + name + " doesn't exist.");
 
-        UserTopicMap userTopicMap=userTopicRepo.find(userId, topicId).orElse(null);
-        if((userTopicMap!=null)&&(userTopicMap.getIsActive()))
+        UserTopicMap userTopicMap=userTopicRepo.findbyname(userId, name).orElse(null);
+        if((userTopicMap!=null)&&(userTopicMap.getIsActive())) {
 
-            throw new DuplicateDataException("Topic is already followed by you.");
+            logger.info("Topic {} is already followed by you.", name);
+            return null;
+        }
+        if((userTopicMap!=null)&&(userTopicMap.getIsActive()==false)) {
+
+            userTopicMap.setIsActive(true);
+            userTopicMap.setCreatedBy(0L);
+            userTopicMap.setUpdatedBy(0L);
+            return userTopicRepo.save(userTopicMap);
+
+        }
+
 
         User user = userRepo.findByUserId(userId).orElse(null);
-        userTopicMap = new UserTopicMap(userId, user.getName(), topicId, topic.getTopic(), true);
+        userTopicMap = new UserTopicMap(userId, user.getName(), topic.getTopicId(),name, true);
         return userTopicRepo.save(userTopicMap);
     }
-
     public Page<UserTopicMap> getTopics(Long userId, Pageable pageable) {
      return userTopicRepo.getTopics(userId,pageable);
 
@@ -49,13 +88,15 @@ public class UserTopicService {
 
     public void remove(Long userId, Long topicId) {
 
-        Topic topic=topicRepo.findByTopicId(topicId).orElse(null);
+
+        Topic topic=topicRepo.findBytopicid(topicId).orElse(null);
         if(topic==null||!(topic.getActive()))
             throw new NotFoundException("Topic with id "+topicId+" doesn't exist");
         UserTopicMap userTopicMap=userTopicRepo.find(userId, topicId).orElse(null);
         if(userTopicMap==null||!(userTopicMap.getIsActive()))
             throw new NotFoundException("Topic with id "+topicId+" is not followed by you.");
         userTopicMap.setIsActive(false);
+        userTopicMap.setUpdatedBy(0L);
         userTopicRepo.save(userTopicMap);
     }
 }

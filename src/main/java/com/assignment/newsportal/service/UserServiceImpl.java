@@ -2,11 +2,16 @@ package com.assignment.newsportal.service;
 
 import com.assignment.newsportal.Exception.MissingDetailException;
 import com.assignment.newsportal.Exception.NotFoundException;
+import com.assignment.newsportal.dto.request.UserDTO;
 import com.assignment.newsportal.dto.update.UserUpdate;
 import com.assignment.newsportal.entity.*;
 import com.assignment.newsportal.repo.UserRepo;
 //import com.assignment.newsportal.service.interfaces.UserService;
+import com.assignment.newsportal.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -14,12 +19,13 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 
-@Component
-public class UserServiceImpl implements UserDetailsService {
+@Service
+public class UserServiceImpl  {
 
     @Autowired
     private UserRepo userRepo;
@@ -27,41 +33,54 @@ public class UserServiceImpl implements UserDetailsService {
     @Autowired
     PasswordEncoder encoder;
 
+    @Autowired
+    UserUtil userUtil;
+
+    @Autowired
+    AuthService authService;
 
 
 
-    @Override
-    @Transactional
-    public UserDetailsImpl loadUserByUsername(String name) throws UsernameNotFoundException {
-        User user = userRepo.findByName(name)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + name));
 
-        return UserDetailsImpl.build(user);
-    }
+//    @Override
+//    @Transactional
+//    public UserDetailsImpl loadUserByUsername(String name) throws UsernameNotFoundException {
+//        User user = userRepo.findByName(name)
+//                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + name));
+//
+//        return UserDetailsImpl.build(user);
+//    }
 
-    public UserDetailsImpl loadUserById(Long userId) throws UsernameNotFoundException {
-        User user = userRepo.findByUserId(userId).orElse(null);
-//                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with Id: " + userId));
-         if(user==null||!user.isActive())
-             throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
-        return UserDetailsImpl.build(user);
-    }
+//    public UserDetailsImpl loadUserById(Long userId) throws UsernameNotFoundException {
+//        User user = userRepo.findByUserId(userId).orElse(null);
+////                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with Id: " + userId));
+//         if(user==null||!user.isActive())
+//             throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
+//        return UserDetailsImpl.build(user);
+//    }
 
 
 
-    public User register(User user) {
+    public UserDTO register(User user) {
 
         user.setActive(true);
-        return userRepo.save(user);
+        user.setCreatedBy(0L);
+        user.setUpdatedBy(0L);
+        userRepo.save(user);
+        return userUtil.convertToDTO(user);
+
 
     }
 
+    @CacheEvict(cacheNames = "user",key="#userId")
     public void remove(Long userId){
         User user = userRepo.findByUserId(userId).orElse(null);
         if(user==null||!user.isActive())
            throw new NotFoundException("User Not Found with Id: " + userId);
         user.setActive(false);
+        user.setUpdatedBy(0L);
         userRepo.save(user);
+        authService.removeAuthcache(userId);
 
     }
 
@@ -75,7 +94,8 @@ public class UserServiceImpl implements UserDetailsService {
 
     }
 
-    public User updateUserDetails(Long userId, UserUpdate userUpdate) {
+    @CachePut(cacheNames = "user",key="#userId")
+    public UserDTO updateUserDetails(Long userId, UserUpdate userUpdate) {
         if(userUpdate.getName().equals("")||userUpdate.getEmail().equals(""))
             throw new MissingDetailException("All Details are compulsory");
         User user=userRepo.findByUserId(userId).orElse(null);
@@ -83,8 +103,12 @@ public class UserServiceImpl implements UserDetailsService {
             throw new NotFoundException("User with id "+userId+" does not exist");
         user.setName(userUpdate.getName());
         user.setEmail(userUpdate.getEmail());
-        return userRepo.save(user);
+        user.setUpdatedBy(0L);
+        userRepo.save(user);
+        authService.update(user);
+        return userUtil.convertToDTO(user);
     }
+
 
     public void changePwd(Long userId,String password) {
         User user= userRepo.findByUserId(userId).orElse(null);
@@ -92,7 +116,28 @@ public class UserServiceImpl implements UserDetailsService {
             throw new NotFoundException("User with id "+userId+" does not exist");
 
         user.setPwd(password);
+        user.setUpdatedBy(0L);
         userRepo.save(user);
+        authService.changePwd(user);
+
+    }
+
+    @Cacheable(cacheNames = "user",key="#userId")
+    public UserDTO getUserDetails(Long userId) {
+        User user=userRepo.findByUserId(userId).orElse(null);
+        if(user==null||!user.isActive())
+            throw new NotFoundException("User with id "+userId+" does not exist");
+        return userUtil.convertToDTO(user);
+
+    }
+
+    @CachePut(cacheNames = "user",key="#user.userId")
+    public UserDTO assignMod(User user) {
+        user.setRole(ERole.ROLE_MODERATOR);
+        user.setUpdatedBy(-1L);
+        userRepo.save(user);
+        authService.update(user);
+        return userUtil.convertToDTO(user);
 
     }
 }

@@ -1,5 +1,6 @@
 package com.assignment.newsportal.security.jwt;
 
+import com.assignment.newsportal.service.AuthService;
 import com.assignment.newsportal.service.UserServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +25,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     private JwtUtils jwtUtils;
 
     @Autowired
-    private UserServiceImpl userDetailsService;
+    private AuthService authService;
 
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
@@ -37,8 +38,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
 
                 Long userId = jwtUtils.getUserIdFromJwtToken(jwt);
-
-                UserDetails userDetails = userDetailsService.loadUserById(userId);
+                UserDetails userDetails = authService.loadUserById(userId);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

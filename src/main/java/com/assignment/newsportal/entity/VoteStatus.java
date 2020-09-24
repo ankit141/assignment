@@ -1,32 +1,28 @@
 package com.assignment.newsportal.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="post_hashtag_map")
-public class PostHashtagMap {
-
-
+@Table(name="vote_status")
+public class VoteStatus {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @Column(name="user_id")
+    private Long userId;
+
     @Column(name="post_id")
     private Long postId;
 
-    @Column(name="hashtag_id")
-    private Long hashtagId;
+    @Column(name="upvoted")
+    private Boolean upvoted;
 
-    @Column(name="hashtag")
-    private String hashtag;
-
-    @Column(name="user_id")
-    private Long userId;
+    @Column(name="downvoted")
+    private Boolean downvoted;
 
     @Column(name="is_active")
     private Boolean isActive;
@@ -36,6 +32,14 @@ public class PostHashtagMap {
 
     @Column(name="updated_at")
     private LocalDateTime updatedAt;
+
+    public VoteStatus(Long userId, Long postId, boolean isActive, boolean upvoted, boolean downvoted) {
+        this.userId=userId;
+        this.postId=postId;
+        this.isActive=isActive;
+        this.upvoted=upvoted;
+        this.downvoted=downvoted;
+    }
 
     @PrePersist
     protected void onCreate() {
@@ -50,15 +54,22 @@ public class PostHashtagMap {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public PostHashtagMap() {
+    public VoteStatus(Long userId, Long postId, Boolean isActive){
+        this.userId=userId;
+        this.postId=postId;
+        this.isActive=isActive;
+
     }
 
-    public PostHashtagMap(Long id, Long postId, Long hashtagId, String hashtag, Long userId, Boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public VoteStatus() {
+    }
+
+    public VoteStatus(Long id, Long userId, Long postId, Boolean upvoted, Boolean downvoted, Boolean isActive, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
-        this.postId = postId;
-        this.hashtagId = hashtagId;
-        this.hashtag = hashtag;
         this.userId = userId;
+        this.postId = postId;
+        this.upvoted = upvoted;
+        this.downvoted = downvoted;
         this.isActive = isActive;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -72,6 +83,14 @@ public class PostHashtagMap {
         this.id = id;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public Long getPostId() {
         return postId;
     }
@@ -80,28 +99,20 @@ public class PostHashtagMap {
         this.postId = postId;
     }
 
-    public Long getHashtagId() {
-        return hashtagId;
+    public Boolean getUpvoted() {
+        return upvoted;
     }
 
-    public void setHashtagId(Long hashtagId) {
-        this.hashtagId = hashtagId;
+    public void setUpvoted(Boolean upvoted) {
+        this.upvoted = upvoted;
     }
 
-    public String getHashtag() {
-        return hashtag;
+    public Boolean getDownvoted() {
+        return downvoted;
     }
 
-    public void setHashtag(String hashtag) {
-        this.hashtag = hashtag;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setDownvoted(Boolean downvoted) {
+        this.downvoted = downvoted;
     }
 
     public Boolean getActive() {

@@ -1,6 +1,5 @@
 package com.assignment.newsportal.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotBlank;
@@ -13,11 +12,12 @@ public class PostDTO implements Serializable {
 
     private String userId;
 
-    @JsonProperty(value="title")
-    @NotBlank(message="Title is mandatory.")
+    @JsonProperty(value = "title")
+    @NotBlank(message = "Title is mandatory.")
     private String title;
 
-    @JsonProperty(value="body")
+
+    @JsonProperty(value = "body")
     private String body;
 
 
@@ -29,7 +29,7 @@ public class PostDTO implements Serializable {
     public PostDTO() {
     }
 
-    public PostDTO(Long postId, String userId, String title, String body, Long upvotes, Long downvotes) {
+    public PostDTO(Long postId, String userId, @NotBlank(message = "Title is mandatory.") String title, String body, Long upvotes, Long downvotes) {
         this.postId = postId;
         this.userId = userId;
         this.title = title;
@@ -37,7 +37,6 @@ public class PostDTO implements Serializable {
         this.upvotes = upvotes;
         this.downvotes = downvotes;
     }
-
 
     public Long getPostId() {
         return postId;
