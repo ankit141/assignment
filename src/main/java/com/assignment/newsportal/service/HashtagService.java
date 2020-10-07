@@ -1,6 +1,7 @@
 package com.assignment.newsportal.service;
 
 import com.assignment.newsportal.Exception.DuplicateDataException;
+import com.assignment.newsportal.Exception.InvalidRequestException;
 import com.assignment.newsportal.Exception.MissingDetailException;
 import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.dto.request.HashtagDTO;
@@ -42,14 +43,20 @@ public class HashtagService {
     HashtagUtil hashtagUtil;
 
     public Hashtag createHashtag(HashtagDTO hashtagDTO, Long topicId,Long userId) {
-        if(hashtagDTO.getHashtag().equals(""))
-            throw new MissingDetailException("Hashtag is compulsory.");
+
+        String hashtagName=hashtagDTO.getHashtag();
+        if(hashtagName.equals(""))
+            throw new MissingDetailException("Hashtag name missing");
+
+        if(!hashtagName.startsWith("#"))
+            throw new InvalidRequestException("Hashtag name should start with #");
+
         Topic topic= topicRepo.findBytopicid(topicId).orElse(null);
 
         if(topic==null||!topic.getActive()){
             throw new NotFoundException("Topic with id "+topicId+" doesn't exist.");
         }
-        Hashtag hashtag= hashtagRepo.findByHashtag(hashtagDTO.getHashtag()).orElse(null);
+        Hashtag hashtag= hashtagRepo.findByHashtag(hashtagName).orElse(null);
         if((hashtag!=null)&&(hashtag.getActive()==true)){
             throw new DuplicateDataException("Hashtag already present.");
         }
@@ -62,7 +69,7 @@ public class HashtagService {
         }
 
         //hashtag=hashtagUtil.convertToEntity(hashtagDTO);
-        hashtag=new Hashtag(topicId,hashtagDTO.getHashtag(),true);
+        hashtag=new Hashtag(topicId,hashtagName,true);
         hashtag.setCreatedBy(userId);
         hashtag.setUpdatedBy(userId);
         return hashtagRepo.save(hashtag);
@@ -74,11 +81,13 @@ public class HashtagService {
     }
 
     @Transactional
-    public void remove(Long hashtagId,Long userId) {
+    public void remove(Long hashtagId,Long userId){
 
         Hashtag hashtag = hashtagRepo.findByHashtagId(hashtagId).orElse(null);
         if(hashtag==null||!hashtag.getActive())
             throw new NotFoundException("Hashtag Not Found with Id: " + hashtagId);
+
+
 
         List<PostHashtagMap> postHashtagMapList=postHashtagRepo.findByHashtagId(hashtagId);
 //        List<Long> postIDS=postHashtagRepo.findByHashtagId(hashtagId);
@@ -99,13 +108,18 @@ public class HashtagService {
     @Transactional
     public Hashtag updateHashtag(Long hashtagId, HashtagDTO hashtagDTO,Long userId) {
 
+
         Hashtag hashtag= hashtagRepo.findByHashtagId(hashtagId).orElse(null);
-        String name=hashtagDTO.getHashtag();
         if(hashtag==null||!hashtag.getActive())
             throw new NotFoundException("Hashtag Not Found with Id: " + hashtagId);
+
+        String name=hashtagDTO.getHashtag();
         if(name.equals("")){
             throw new MissingDetailException("Hashtag name is mandatory.");
         }
+
+        if(!name.startsWith("#"))
+            throw new InvalidRequestException("Hashtag name should start with #");
 
         Hashtag h=hashtagRepo.findByHashtag(name).orElse(null);
         if(h!=null)

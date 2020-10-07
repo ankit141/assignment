@@ -1,8 +1,7 @@
 package com.assignment.newsportal.controller;
 
 
-import com.assignment.newsportal.Exception.DuplicateDataException;
-import com.assignment.newsportal.Exception.MissingDetailException;
+import com.assignment.newsportal.Exception.*;
 import com.assignment.newsportal.dto.request.*;
 import com.assignment.newsportal.dto.response.JwtResponse;
 import com.assignment.newsportal.dto.response.MessageResponse;
@@ -26,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -99,6 +99,9 @@ public class UserController {
     @Value("${example.app.adminPwd}")
     private String adminPwd;
 
+//    @Value("${example.app.pageSizeDefault}")
+//    private Integer pageSize;
+
 
 
 
@@ -107,25 +110,25 @@ public class UserController {
         if((loginRequest.getEmail().equals(adminMail))&&(loginRequest.getPassword().equals(adminPwd))){
             User user = userRepo.findByUserId(userId).orElse(null);
             if(user==null||!user.isActive())
-                throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
+                throw new NotFoundException("User Not Found with Id: "+ userId);
             if(user.getRole().equals(ERole.ROLE_MODERATOR)){
-                return ResponseEntity.badRequest().body(new MessageResponse("User is already a moderator."));
+                throw new DuplicateDataException("User is already a moderator.");
             }
                 userDTO=userService.assignMod(user);
                 return new ResponseEntity<>(userDTO,HttpStatus.OK);
         }
-         return new ResponseEntity<>(new MessageResponse("Error: Unauthorized."),HttpStatus.UNAUTHORIZED);
+         throw new AccessDeniedException("Invalid Credentials");
     }
 
     @PutMapping(value="/changePassword")
     public ResponseEntity<?> changePwd(@RequestBody @Valid PasswordChange passwordChange){
         if(!(passwordChange.getNewPwd().equals(passwordChange.getConfirm()))){
-           return ResponseEntity.badRequest().body(new MessageResponse("Passwords do not match.")) ;
+           throw new MismatchException("Passwords do not match.") ;
         }
 
         Long userId= jwtUtils.getSubject();
         userService.changePwd(userId, encoder.encode(passwordChange.getNewPwd()));
-        return ResponseEntity.ok(new MessageResponse("Password changed successfully."));
+        return new ResponseEntity<>(new MessageResponse("Password changed successfully."),HttpStatus.OK);
 
     }
 
@@ -148,11 +151,11 @@ public class UserController {
                 .map(item -> item.getAuthority())
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(new JwtResponse(jwt,
+        return new ResponseEntity<>(new JwtResponse(jwt,
                 userDetails.getuserId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
-                roles));
+                roles),HttpStatus.OK);
     }
 
 
@@ -162,13 +165,10 @@ public class UserController {
 
 
         if(userTotalDTO.getName().equals("")||userTotalDTO.getEmail().equals("")||userTotalDTO.getPwd().equals("")){
-            return ResponseEntity.badRequest().body(new MessageResponse("All details are compulsory."));
+            throw new MissingDetailException("All details are compulsory");
         }
         if (userRepo.existsByEmail(userTotalDTO.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use."));
-//            throw new DuplicateDataException("Email Already in Use!");
+            throw new DuplicateDataException("Email Already in Use");
         }
 
         User user = new User(userTotalDTO.getName(),
@@ -208,10 +208,9 @@ public class UserController {
 
 
     @DeleteMapping(value="/close")
-    public ResponseEntity<?> closeAccount(/*@RequestHeader("Authorization") String token*/) {
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+    public ResponseEntity<?> closeAccount() {
 
-//        String jwt = token.substring(7);
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId=jwtUtils.getSubject();
         userService.remove(userId);
 
@@ -219,16 +218,17 @@ public class UserController {
     }
 
     @GetMapping(value="/posts")
-
-    public ResponseEntity<?> getUserPosts(/*@RequestHeader("Authorization") String token,*/ Pageable pageable){
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+    public ResponseEntity<?> getMyPosts( @PageableDefault(size = 15) Pageable pageable){
 
 //        String jwt = token.substring(7);
 //        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId=jwtUtils.getSubject();
-        //userService.getUserPosts(userId,pageable);
-        if(userId==null)
-            return new ResponseEntity<>(new MessageResponse("Error: Unauthorized."),HttpStatus.UNAUTHORIZED);
+
+
         Page<Post> postList = userService.getUserPosts(userId,pageable);
+        if(postList.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("No posts found"),HttpStatus.OK);
         List<PostDTO> postDTOS = postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
         return new ResponseEntity<>(postDTOS, HttpStatus.OK);
 
@@ -236,11 +236,9 @@ public class UserController {
 
 
     @GetMapping(value="/profile")
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
     public ResponseEntity<?> getUserDetails(){
 
-//        String jwt = token.substring(7, token.length());
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
-//        userService.getUserPosts(userId,pageable);
         Long userId=jwtUtils.getSubject();
         userDTO= userService.getUserDetails(userId);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
@@ -249,12 +247,11 @@ public class UserController {
 
     @GetMapping(value="/all")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<?> getAllUserDetails(Pageable pageable){
+    public ResponseEntity<?> getAllUserDetails(@PageableDefault(size = 15) Pageable pageable){
 
-//        String jwt = token.substring(7, token.length());
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
-//        userService.getUserPosts(userId,pageable);
         Page<User> userList = userService.getAllUserDetails(pageable);
+        if(userList.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("No users present in the system"),HttpStatus.OK);
         List<UserDTO> userDTOS = userList.stream().map(post -> userUtil.convertToDTO(post)).collect(Collectors.toList());
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
 
@@ -262,35 +259,26 @@ public class UserController {
 
     @PutMapping(value="/update")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdate userUpdate/* ,@RequestHeader("Authorization") String token*/){
+    public ResponseEntity<?> updateUserDetails(@Valid @RequestBody UserUpdate userUpdate){
 
         if (userRepo.existsByEmail(userUpdate.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use."));
-//            throw new DuplicateDataException("Email Already in Use!");
+            throw new DuplicateDataException("Email Already in Use");
         }
-//        String jwt = token.substring(7);
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
         userDTO=userService.updateUserDetails(userId,userUpdate);
 
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
-
-
-
-
     }
 
 
-    @PostMapping(value="/topics")
-    @PreAuthorize("hasRole('CONSUMER')")
-    public ResponseEntity<?> addMulTopics(/*@RequestHeader("Authorization") String token,*/@RequestBody @Valid TopicsRequest topicsRequest){
-//        String jwt= token.substring(7);
-//        Long userId=Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
 
+    @PostMapping(value="/topics")
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+    public ResponseEntity<?> addMulTopics(@RequestBody @Valid TopicsRequest topicsRequest){
         Long userId= jwtUtils.getSubject();
         Set<String> topics= topicsRequest.getFollow();
+        if(topics.isEmpty())
+            throw new MissingDetailException("No topics added");
         List<TopicDTO>topicDTOS= new ArrayList<>();
 
         for(String t: topics){
@@ -305,31 +293,63 @@ public class UserController {
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
 
     }
-
-
-
     @GetMapping(value="/topics")
-    @PreAuthorize("hasRole('CONSUMER')")
-    ResponseEntity<?> getTopicsFollowed(/*@RequestHeader("Authorization") String token,*/ Pageable pageable){
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+    public ResponseEntity<?> getTopicsFollowed (@PageableDefault(size = 15) Pageable pageable){
 
 //        String jwt = token.substring(7);
 //        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
         Page<UserTopicMap> list =  userTopicService.getTopics(userId,pageable);
+        if(list.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("You do not follow any topics"),HttpStatus.OK);
         List<TopicDTO> topicDTOS = list.stream().map(ele -> userTopicUtil.convertToDTO(ele)).collect(Collectors.toList());
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
 
     @DeleteMapping(value="/topic/{topicId}")
-    @PreAuthorize("hasRole('CONSUMER')")
-    ResponseEntity<?> removeTopicFollowed(/*@RequestHeader("Authorization") String token,*/@PathVariable @NotNull Long topicId){
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+    public ResponseEntity<?> removeTopicFollowed(@PathVariable @NotNull Long topicId){
 
-//        String jwt = token.substring(7);
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
         userTopicService.remove(userId, topicId);
 
-        return ResponseEntity.ok(new MessageResponse("Topic unfollowed."));
+        return new ResponseEntity<>(new MessageResponse("Topic unfollowed."),HttpStatus.OK);
     }
+
+    @GetMapping(value="/{userId}/topics")
+    @PreAuthorize("hasRole('MODERATOR')")
+    public ResponseEntity<?> getUserTopics(@PathVariable @NotNull Long userId,@PageableDefault(size = 15) Pageable pageable){
+
+//        String jwt = token.substring(7);
+//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
+        User user=userRepo.findByUserId(userId).orElse(null);
+        if(user==null||user.isActive()==false)
+            throw new NotFoundException("User does not exist");
+
+        Page<UserTopicMap> list =  userTopicService.getTopics(userId,pageable);
+        if(list.isEmpty())
+            return new ResponseEntity<>(new MessageResponse(" User doesn't follow any topics"),HttpStatus.OK);
+        List<TopicDTO> topicDTOS = list.stream().map(ele -> userTopicUtil.convertToDTO(ele)).collect(Collectors.toList());
+        return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
+    }
+
+    @GetMapping(value="/{userId}/posts")
+    @PreAuthorize("hasRole('MODERATOR')")
+    public ResponseEntity<?> getUserPosts(@PathVariable @NotNull Long userId,@PageableDefault(size = 15) Pageable pageable){
+
+
+        User user=userRepo.findByUserId(userId).orElse(null);
+        if(user==null||user.isActive()==false)
+            throw new NotFoundException("User does not exist");
+
+        Page<Post> postList = userService.getUserPosts(userId,pageable);
+        if(postList.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("No posts found"),HttpStatus.OK);
+        List<PostDTO> postDTOS = postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
+        return new ResponseEntity<>(postDTOS, HttpStatus.OK);
+
+    }
+
 
 }

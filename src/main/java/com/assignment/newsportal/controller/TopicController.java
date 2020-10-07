@@ -1,6 +1,7 @@
 package com.assignment.newsportal.controller;
 
 
+import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.dto.request.HashtagDTO;
 import com.assignment.newsportal.dto.request.PostDTO;
 import com.assignment.newsportal.dto.request.TopicDTO;
@@ -14,8 +15,10 @@ import com.assignment.newsportal.service.TopicService;
 import com.assignment.newsportal.util.HashtagUtil;
 import com.assignment.newsportal.util.TopicUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -43,6 +46,9 @@ public class TopicController {
 
     @Autowired
     JwtUtils jwtUtils;
+
+//    @Value("${example.app.pageSizeDefault}")
+//    private Integer pageSize;
 
 
     @PostMapping(value="/create")
@@ -74,8 +80,10 @@ public class TopicController {
 
     @GetMapping(value="/all")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<?> getAllTopics(Pageable pageable){
+    public ResponseEntity<?> getAllTopics(@PageableDefault(size = 15) Pageable pageable){
         Page<Topic> topicList = topicService.getTopics(pageable);
+        if(topicList.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("No topics found"),HttpStatus.OK);
         List<TopicDTO> topicDTOS = topicList.stream().map(topic -> topicUtil.convertToDTO(topic)).collect(Collectors.toList());
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
@@ -85,7 +93,7 @@ public class TopicController {
     public ResponseEntity<?> deleteTopic(@PathVariable @NotNull Long topicId){
         Long userId= jwtUtils.getSubject();
         topicService.remove(topicId,userId);
-        return ResponseEntity.ok(new MessageResponse("Topic deleted."));
+        return new ResponseEntity<>(new MessageResponse("Topic deleted."),HttpStatus.OK);
     }
 
     @PutMapping(value="/{topicId}")
@@ -102,9 +110,11 @@ public class TopicController {
 
     @GetMapping(value="/{topicId}")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<?> getTopicHashtag(@PathVariable @NotNull Long topicId, Pageable pageable){
+    public ResponseEntity<?> getTopicHashtag(@PathVariable @NotNull Long topicId, @PageableDefault(size = 15) Pageable pageable){
 
         Page<Hashtag> hashtagList = topicService.getTopicHashtags(topicId,pageable);
+        if(hashtagList.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("No Hashtags present"),HttpStatus.OK);
         List<HashtagDTO> hashtagDTOS = hashtagList.stream().map(hashtag -> hashtagUtil.convertToDTO(hashtag)).collect(Collectors.toList());
         return new ResponseEntity<>(hashtagDTOS, HttpStatus.OK);
 

@@ -1,5 +1,6 @@
 package com.assignment.newsportal.controller;
 
+import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.dto.request.HashtagDTO;
 import com.assignment.newsportal.dto.request.TopicDTO;
 import com.assignment.newsportal.dto.response.MessageResponse;
@@ -10,8 +11,10 @@ import com.assignment.newsportal.security.jwt.JwtUtils;
 import com.assignment.newsportal.service.HashtagService;
 import com.assignment.newsportal.util.HashtagUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,17 +31,18 @@ public class HashtagController {
     @Autowired
     HashtagService hashtagService;
 
-    @Autowired
-    HashtagRepo hashtagRepo;
 
-    @Autowired
-    HashtagDTO hashtagDTO;
+//    @Autowired
+//    HashtagDTO hashtagDTO;
 
     @Autowired
     HashtagUtil hashtagUtil;
 
     @Autowired
     JwtUtils jwtUtils;
+
+//    @Value("${example.app.pageSizeDefault}")
+//    private Integer pageSize;
 
     @PostMapping(value = "topic/{topicId}")
     @PreAuthorize("hasRole('MODERATOR')")
@@ -51,8 +55,10 @@ public class HashtagController {
 
     @GetMapping(value = "/hashtags")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<?> getAllHashtags(Pageable pageable) {
+    public ResponseEntity<?> getAllHashtags(@PageableDefault(size = 15) Pageable pageable) {
         Page<Hashtag> hashtagList = hashtagService.getHashtags(pageable);
+        if(hashtagList.isEmpty())
+            return new ResponseEntity<>(new MessageResponse("No Hashtags found"),HttpStatus.OK);
         List<HashtagDTO> hashtagDTOS = hashtagList.stream().map(hashtag -> hashtagUtil.convertToDTO(hashtag)).collect(Collectors.toList());
         return new ResponseEntity<>(hashtagDTOS, HttpStatus.OK);
     }
@@ -62,7 +68,7 @@ public class HashtagController {
     public ResponseEntity<?> delete(@PathVariable @NotNull Long hashtagId) {
         Long userId= jwtUtils.getSubject();
         hashtagService.remove(hashtagId,userId);
-        return ResponseEntity.ok(new MessageResponse("Hashtag deleted."));
+        return new ResponseEntity<>(new MessageResponse("Hashtag deleted"),HttpStatus.OK);
     }
 
     @PutMapping(value = "/hashtag/{hashtagId}")

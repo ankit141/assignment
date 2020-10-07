@@ -1,9 +1,11 @@
 package com.assignment.newsportal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 public class PostDTO implements Serializable {
@@ -30,7 +32,28 @@ public class PostDTO implements Serializable {
 
     private Long downvotes;
 
+    private LocalDateTime updatedAt;
+
     public PostDTO() {
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public PostDTO(Long postId, String userId, @NotBlank(message = "Title is mandatory.") String title, Set<String> hashtags, String body, Long upvotes, Long downvotes, LocalDateTime updatedAt) {
+        this.postId = postId;
+        this.userId = userId;
+        this.title = title;
+        this.hashtags = hashtags;
+        this.body = body;
+        this.upvotes = upvotes;
+        this.downvotes = downvotes;
+        this.updatedAt = updatedAt;
     }
 
     public Set<String> getHashtags() {

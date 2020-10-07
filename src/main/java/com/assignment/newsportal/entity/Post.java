@@ -29,8 +29,8 @@ public class Post extends Common{
     private String title;
 
     @Column(name="hashtags")
-    @ElementCollection(targetClass=String.class)
-    Set<String> hashtags;
+    @ElementCollection
+    private Set<String> hashtags;
 
     @Column(name="body")
     private String body;

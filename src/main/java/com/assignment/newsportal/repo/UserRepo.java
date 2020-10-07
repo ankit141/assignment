@@ -29,7 +29,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
     Optional<User> findByName(String name);
     Optional<User> findByUserId(Long userId);
 
-    @Query("Select post from Post post where post.userId=?1 and post.isActive=true")
+    @Query("Select post from Post post where post.userId=?1 and post.isActive=true order by post.updatedAt desc")
     Page<Post> getUserPosts(Long userId,Pageable pageable);
 
     Boolean existsByName(String username);

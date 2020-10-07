@@ -1,5 +1,6 @@
 package com.assignment.newsportal.service;
 
+import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.entity.User;
 import com.assignment.newsportal.repo.UserRepo;
 import org.modelmapper.ModelMapper;
@@ -25,20 +26,20 @@ public class AuthService implements UserDetailsService {
 
     @Override
     @Transactional
-    public UserDetailsImpl loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetailsImpl loadUserByUsername(String email) {
         User user = userRepo.findByEmail(email).orElse(null);
         if(user==null||!user.isActive())
-            throw new UsernameNotFoundException("User Not Found.");
-
+//            throw new UsernameNotFoundException("User Not Found.");
+              throw new NotFoundException("User Not Found");
         return UserDetailsImpl.build(user);
     }
 
     @Transactional
     @Cacheable(cacheNames = "Authenticator", key = "#userId")
-    public UserDetailsImpl loadUserById(Long userId) throws UsernameNotFoundException {
+    public UserDetailsImpl loadUserById(Long userId) {
         User user = userRepo.findByUserId(userId).orElse(null);
         if(user==null||!user.isActive())
-            throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
+            throw new NotFoundException("User Not Found with Id: "+ userId);
         return UserDetailsImpl.build(user);
     }
 

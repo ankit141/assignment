@@ -56,9 +56,13 @@ public class UserTopicService {
 //    }
 
     public UserTopicMap add(Long userId, String name) {
+        if(name.equals("")) {
+            logger.error("Topic {} has no name", name);
+            return null;
+        }
         Topic topic = topicRepo.findBytopic(name).orElse(null);
         if (topic == null || !topic.getActive())
-            throw new NotFoundException("Topic " + name + " doesn't exist.");
+            logger.info("Topic {} does not exist", name);
 
         UserTopicMap userTopicMap=userTopicRepo.findbyname(userId, name).orElse(null);
         if((userTopicMap!=null)&&(userTopicMap.getIsActive())) {
@@ -98,7 +102,7 @@ public class UserTopicService {
         if(userTopicMap==null||!(userTopicMap.getIsActive()))
             throw new NotFoundException("Topic with id "+topicId+" is not followed by you.");
         userTopicMap.setIsActive(false);
-        userTopicMap.setUpdatedBy(userId);
+        userTopicMap.setUpdatedBy(0L);
         userTopicRepo.save(userTopicMap);
     }
 }
