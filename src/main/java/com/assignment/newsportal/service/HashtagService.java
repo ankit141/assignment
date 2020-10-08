@@ -45,8 +45,8 @@ public class HashtagService {
     public Hashtag createHashtag(HashtagDTO hashtagDTO, Long topicId,Long userId) {
 
         String hashtagName=hashtagDTO.getHashtag();
-        if(hashtagName.equals(""))
-            throw new MissingDetailException("Hashtag name missing");
+//        if(hashtagName.equals(""))
+//            throw new MissingDetailException("Hashtag name missing");
 
         if(!hashtagName.startsWith("#"))
             throw new InvalidRequestException("Hashtag name should start with #");
@@ -114,9 +114,9 @@ public class HashtagService {
             throw new NotFoundException("Hashtag Not Found with Id: " + hashtagId);
 
         String name=hashtagDTO.getHashtag();
-        if(name.equals("")){
-            throw new MissingDetailException("Hashtag name is mandatory.");
-        }
+//        if(name.equals("")){
+//            throw new MissingDetailException("Hashtag name is mandatory.");
+//        }
 
         if(!name.startsWith("#"))
             throw new InvalidRequestException("Hashtag name should start with #");

@@ -35,6 +35,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -136,6 +139,7 @@ public class UserController {
     @PostMapping(value="/signin")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
@@ -162,11 +166,6 @@ public class UserController {
     @PostMapping(value = "/signup")
     public ResponseEntity<?> register(@RequestBody @Valid UserTotalDTO userTotalDTO) {
 
-
-
-        if(userTotalDTO.getName().equals("")||userTotalDTO.getEmail().equals("")||userTotalDTO.getPwd().equals("")){
-            throw new MissingDetailException("All details are compulsory");
-        }
         if (userRepo.existsByEmail(userTotalDTO.getEmail())) {
             throw new DuplicateDataException("Email Already in Use");
         }
@@ -177,29 +176,6 @@ public class UserController {
 
         user.setRole(ERole.ROLE_CONSUMER);
 
-
-//        String strRole=userTotalDTO.getRole();
-//
-//
-//        if (strRole == null) {
-//
-//                    throw new MissingDetailException("Error: Please enter role.");
-//
-//        } else {
-////
-//                switch (strRole) {
-//
-//                    case "moderator":
-////
-//                        user.setRole(ERole.ROLE_MODERATOR);
-//                        break;
-//                    default:
-//
-//                        user.setRole(ERole.ROLE_CONSUMER);
-//                }
-//
-//        }
-//
         userDTO = userService.register(user);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
 
@@ -221,8 +197,6 @@ public class UserController {
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
     public ResponseEntity<?> getMyPosts( @PageableDefault(size = 15) Pageable pageable){
 
-//        String jwt = token.substring(7);
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId=jwtUtils.getSubject();
 
 
@@ -278,7 +252,7 @@ public class UserController {
         Long userId= jwtUtils.getSubject();
         Set<String> topics= topicsRequest.getFollow();
         if(topics.isEmpty())
-            throw new MissingDetailException("No topics added");
+            throw new InvalidRequestException("No topics added");
         List<TopicDTO>topicDTOS= new ArrayList<>();
 
         for(String t: topics){
@@ -297,8 +271,6 @@ public class UserController {
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
     public ResponseEntity<?> getTopicsFollowed (@PageableDefault(size = 15) Pageable pageable){
 
-//        String jwt = token.substring(7);
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
         Page<UserTopicMap> list =  userTopicService.getTopics(userId,pageable);
         if(list.isEmpty())
@@ -321,8 +293,6 @@ public class UserController {
     @PreAuthorize("hasRole('MODERATOR')")
     public ResponseEntity<?> getUserTopics(@PathVariable @NotNull Long userId,@PageableDefault(size = 15) Pageable pageable){
 
-//        String jwt = token.substring(7);
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         User user=userRepo.findByUserId(userId).orElse(null);
         if(user==null||user.isActive()==false)
             throw new NotFoundException("User does not exist");

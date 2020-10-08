@@ -14,21 +14,19 @@ import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Set;
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Component
 public class UserDTO implements Serializable {
 
-    //        @JsonProperty(value = "user_id")
-//        private Long userId;
+
     private Long userId;
-    @JsonProperty(value = "name")
-    @NotBlank(message = "Name is mandatory.")
+    @JsonProperty("name")
+    @NotBlank(message = "Please provide name.")
     //@NotEmpty(message = "Name cannot be empty")
     private String name;
 
-    //@JsonFormat(pattern = "yyyy-MM-dd")
-    @JsonProperty(value = "email")
-    @NotBlank(message="Email is mandatory.")
+    @JsonProperty("email")
+    @NotBlank(message="Please provide email.")
     private String email;
 
 //    @JsonProperty(value = "password")
@@ -38,16 +36,9 @@ public class UserDTO implements Serializable {
 //    @JsonProperty(value = "roles")
 //    private Set<String> roles;
       @JsonProperty(value = "role")
-      @NotBlank(message = "Role is mandatory.")
+      @NotBlank
         private String role;
     public UserDTO() {
-    }
-
-    public UserDTO(Long userId, @NotBlank(message = "Name is mandatory.") String name, @NotBlank(message = "Email is mandatory.") String email, @NotBlank(message = "Role is mandatory.") String role) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.role = role;
     }
 
     public Long getUserId() {

@@ -96,8 +96,8 @@ public class UserServiceImpl  {
 
     @CachePut(cacheNames = "user",key="#userId")
     public UserDTO updateUserDetails(Long userId, UserUpdate userUpdate) {
-        if(userUpdate.getName().equals("")||userUpdate.getEmail().equals(""))
-            throw new MissingDetailException("All Details are compulsory");
+//        if(userUpdate.getName().equals("")||userUpdate.getEmail().equals(""))
+//            throw new MissingDetailException("All Details are compulsory");
         User user=userRepo.findByUserId(userId).orElse(null);
         if(user==null||!user.isActive())
             throw new NotFoundException("User with id "+userId+" does not exist");

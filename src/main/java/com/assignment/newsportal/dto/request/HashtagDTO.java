@@ -1,11 +1,13 @@
 package com.assignment.newsportal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Component
 public class HashtagDTO implements Serializable {
 
@@ -13,17 +15,10 @@ public class HashtagDTO implements Serializable {
 
     private Long topicId;
 
-    @JsonProperty
-    @NotBlank(message = "Hashtag name is compulsory.")
+    @NotBlank(message = "Please enter hashtag name.")
     private String hashtag;
 
     public HashtagDTO() {
-    }
-
-    public HashtagDTO(Long hashtagId, Long topicId, @NotBlank(message = "Hashtag name is compulsory.") String hashtag) {
-        this.hashtagId = hashtagId;
-        this.topicId = topicId;
-        this.hashtag = hashtag;
     }
 
     public Long getHashtagId() {

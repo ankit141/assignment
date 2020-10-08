@@ -2,7 +2,7 @@ package com.assignment.newsportal.controller;
 
 
 import com.assignment.newsportal.Exception.DuplicateDataException;
-import com.assignment.newsportal.Exception.MissingDetailException;
+//import com.assignment.newsportal.Exception.MissingDetailException;
 import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.Exception.UnauthorisedException;
 import com.assignment.newsportal.dto.request.PostDTO;
@@ -62,11 +62,6 @@ public class PostController {
     public ResponseEntity<?> publish(@RequestBody @Valid PostDTO postDTO) {
 
         Long userId= jwtUtils.getSubject();
-//        if(postDTO.getTitle().equals("")){
-////            return ResponseEntity.badRequest().body(new MessageResponse("Error: Post title is mandatory."));
-//            throw new MissingDetailException("Post title is incomplete");
-//        }
-//
 
         Post post= postService.publish(postDTO,userId);
 
@@ -77,9 +72,12 @@ public class PostController {
     @GetMapping(value="/posts")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
     public ResponseEntity<?> getAllPosts(@PageableDefault(size = 15) Pageable pageable) {
+
         Page<Post> postList = postService.getPosts(pageable);
+
         if(postList.isEmpty())
             return new ResponseEntity<>(new MessageResponse("No posts found"),HttpStatus.OK);
+
         List<PostDTO> postDTOS =
                 postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
         return new ResponseEntity<>(postDTOS, HttpStatus.OK);
@@ -91,32 +89,53 @@ public class PostController {
     public ResponseEntity<?> unpublish(@PathVariable @NotNull Long postId){
 
 //        String jwt = token.substring(7);
-        Post post=postRepo.findByPostId(postId).orElse(null);
-        if(post==null||!post.getActive()){
-            throw new NotFoundException("Post with id "+postId+" not found.");
-        }
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
+//        Post post=postRepo.findByPostId(postId).orElse(null);
+//        if(post==null||!post.getActive()){
+//            throw new NotFoundException("Post with id "+postId+" not found.");
+//        }
+////        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
-        User user= userRepo.findByUserId(userId).orElse(null);
-        Long Id=postService.findUserIdOfPost(postId);
-        if((user.getRole()==ERole.ROLE_CONSUMER)&&(userId!=Id))
-            throw new UnauthorisedException("Cannot delete other's posts");
-        postService.unpublish(post,userId);
+//        User user= userRepo.findByUserId(userId).orElse(null);
+//        Long Id=postService.findUserIdOfPost(postId);
+//        if((user.getRole()==ERole.ROLE_CONSUMER)&&(userId!=Id))
+//            throw new UnauthorisedException("Cannot delete other's posts");
+        postService.unpublish(postId,userId);
 
         return ResponseEntity.ok(new MessageResponse("Post deleted."));
 
     }
 
-    @PutMapping(value="/post/{postId}/vote")
+//    @PutMapping(value="/post/{postId}/vote")
+//    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+//    public ResponseEntity<PostDTO> vote(@PathVariable @NotNull Long postId,@RequestHeader("Vote") Long val){
+//
+//        Long userId= jwtUtils.getSubject();
+//
+//
+////        VoteStatus voteStatus=postService.vote(postId,val,userId);
+//        Post post=postService.vote(postId,val,userId);
+////        Post post=postRepo.findByPostId(postId).orElse(null);
+//        return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);
+//
+//    }
+
+    @PutMapping(value="/post/{postId}/upvote")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<PostDTO> vote(@PathVariable @NotNull Long postId,@RequestHeader("Vote") Long val){
+    public ResponseEntity<PostDTO> upvote(@PathVariable @NotNull Long postId){
 
         Long userId= jwtUtils.getSubject();
 
+        Post post=postService.upvote(postId,userId);
+        return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);
 
-//        VoteStatus voteStatus=postService.vote(postId,val,userId);
-        Post post=postService.vote(postId,val,userId);
-//        Post post=postRepo.findByPostId(postId).orElse(null);
+    }
+
+    @PutMapping(value="/post/{postId}/downvote")
+    @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
+    public ResponseEntity<PostDTO> downvote(@PathVariable @NotNull Long postId){
+
+        Long userId= jwtUtils.getSubject();
+        Post post=postService.downvote(postId,userId);
         return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);
 
     }
@@ -126,19 +145,9 @@ public class PostController {
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
     public ResponseEntity<?> updatePost(@PathVariable @NotNull Long postId,@RequestBody @Valid PostDTO postDTO ){
 
-//        String jwt = token.substring(7);
-//        if(postDTO.getTitle().equals("")){
-//            throw new MissingDetailException("Post title is incomplete");
-//        }
-//        Post post=postRepo.findByPostId(postId).orElse(null);
-//        if(post==null||!post.getActive()){
-//            throw new NotFoundException("Post with id "+postId+" not found.");
-//        }
-//        Long userId = Long.valueOf(jwtUtils.getUserIdFromJwtToken(jwt));
         Long userId= jwtUtils.getSubject();
         Long Id=postService.findUserIdOfPost(postId);
         if(userId.equals(Id)) {
-
 
             Post post = postService.update(postId, postDTO);
             return new ResponseEntity<>(postUtil.convertToDTO(post), HttpStatus.OK);

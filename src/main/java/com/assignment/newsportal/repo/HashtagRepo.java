@@ -22,6 +22,8 @@ public interface HashtagRepo extends JpaRepository<Hashtag, Long> {
 
     Optional<Hashtag> findByHashtagId(Long hashtagId);
 
+
+
 //
 //    @Query(value = "Select h from Hashtag h where h.hashtag=?1 and h.isActive=true")
 //    Hashtag exist(String hashtag);

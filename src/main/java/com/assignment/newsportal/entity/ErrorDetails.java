@@ -19,15 +19,22 @@ public class ErrorDetails {
 
     private String message;
 
-    private String path;
+//    private String path;
 
-    public ErrorDetails(Date date, String status, String error, String message, String path) {
+//    public ErrorDetails(Date date, String status, String error, String message, String path) {
+//        this.date = date;
+//        this.status = status;
+//        this.error = error;
+//        this.message = message;
+//        this.path = path;
+
+    public ErrorDetails(Date date, String status, String error, String message) {
         this.date = date;
         this.status = status;
         this.error = error;
         this.message = message;
-        this.path = path;
     }
+//    }
 
     public ErrorDetails() {
     }
@@ -64,13 +71,13 @@ public class ErrorDetails {
         this.message = message;
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
+//    public String getPath() {
+//        return path;
+//    }
+//
+//    public void setPath(String path) {
+//        this.path = path;
+//    }
 
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Repository
 public interface PostHashtagRepo extends JpaRepository<PostHashtagMap, Long> {
@@ -27,4 +28,7 @@ public interface PostHashtagRepo extends JpaRepository<PostHashtagMap, Long> {
     @Modifying
     @Query(value="Update PostHashtagMap p set p.hashtag=?2 , p.updatedBy=?3 where p.hashtagId=?1")
     void update(Long hashtagId, String name,Long userId);
+
+    @Query(value = "Select p.postId from PostHashtagMap p where LOWER(p.hashtag) LIKE %?1% ")
+    Set<Long> findByHashtag(String sval);
 }

@@ -25,24 +25,25 @@ public class TopicService {
 
 
     public Topic createTopic(String t,Long userId) {
-        if (t.equals(""))
-            throw new MissingDetailException("Topic is mandatory.");
+//        if (t.equals(""))
+//            throw new MissingDetailException("Topic is mandatory.");
         Topic topic = topicRepo.findBytopic(t).orElse(null);
         if ((topic != null)&&(topic.getActive())) {
             throw new DuplicateDataException("Topic is already present.");
 
         }
-        if((topic!=null)&&(topic.getActive()==false)) {
+        else if((topic!=null)&&(topic.getActive()==false)) {
             topic.setActive(true);
             topic.setCreatedBy(userId);
             topic.setUpdatedBy(userId);
             return topicRepo.save(topic);
         }
-        topic.setTopic(t);
-        topic.setActive(true);
-        topic.setCreatedBy(userId);
-        topic.setUpdatedBy(userId);
-        return topicRepo.save(topic);
+        Topic newTopic=new Topic();
+        newTopic.setTopic(t);
+        newTopic.setActive(true);
+        newTopic.setCreatedBy(userId);
+        newTopic.setUpdatedBy(userId);
+        return topicRepo.save(newTopic);
     }
 
     public Page<Topic> getTopics(Pageable pageable) {
@@ -64,9 +65,9 @@ public class TopicService {
         Topic topic= topicRepo.findBytopicid(topicId).orElse(null);
         if(topic==null||!topic.getActive())
             throw new NotFoundException("Topic Not Found with Id: " + topicId);
-        if(topicDTO.getTopic().equals("")){
-            throw new MissingDetailException("Topic is mandatory.");
-        }
+//        if(topicDTO.getTopic().equals("")){
+//            throw new MissingDetailException("Topic is mandatory.");
+//        }
         if(topic.getTopic().equals(topicDTO.getTopic()))
             throw new DuplicateDataException("Topic is already present.");
         topic.setTopic(topicDTO.getTopic());

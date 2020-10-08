@@ -2,7 +2,8 @@ package com.assignment.newsportal.dto.request;
 
 
 
-//import com.assignment.newsportal.entity.Role;
+
+import com.assignment.newsportal.Constants;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,42 +11,34 @@ import com.sun.istack.NotNull;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Set;
 
 
-//@JsonIgnoreProperties(ignoreUnknown = true)
-//    @Getter
-//    @Setter
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserTotalDTO implements Serializable {
 
-    //        @JsonProperty(value = "user_id")
-//        private Long userId;
     private Long userId;
-    @JsonProperty(value = "name")
-    @NotBlank(message = "Name is mandatory.")
+    @JsonProperty("name")
+    @NotBlank(message = "Please provide name.")
     private String name;
 
-    @JsonProperty(value = "email")
-    @NotBlank(message="Email is mandatory.")
+    @JsonProperty("email")
+    @Pattern(regexp = Constants.EMAIL,message = "Please enter valid email.")
+    @NotBlank(message="Please provide email.")
     private String email;
 
-    @JsonProperty(value = "password")
-    @NotBlank(message="Password is mandatory.")
+    @JsonProperty("password")
+    @Size(min = 8, max = 15,message = "Password should have between 8 and 15 characters.")
+    @Pattern(regexp = Constants.PASSWORD,message = "Please enter valid password.")
+    @NotBlank(message="Please provide password.")
     private String pwd;
 
-    //    @JsonProperty(value = "roles")
-//    private Set<String> roles;
+
 
     public UserTotalDTO() {
-    }
-
-    public UserTotalDTO(Long userId, @NotBlank(message = "Name is mandatory.") String name, @NotBlank(message = "Email is mandatory.") String email, @NotBlank(message = "Password is mandatory.") String pwd) {
-        this.userId = userId;
-        this.name = name;
-        this.email = email;
-        this.pwd = pwd;
     }
 
     public Long getUserId() {

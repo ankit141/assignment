@@ -1,18 +1,23 @@
 package com.assignment.newsportal.dto.update;
 
+import com.assignment.newsportal.Constants;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserUpdate implements Serializable{
     private Long userId;
     @JsonProperty
-    @NotBlank(message="Name is mandatory.")
+    @NotBlank(message="Please provide name.")
     private String name;
 
     @JsonProperty
-    @NotBlank(message = "Email is mandatory.")
+    @NotBlank(message = "Please provide email.")
+    @Pattern(regexp = Constants.EMAIL,message = "Please enter valid email.")
     private String email;
 
     public UserUpdate() {

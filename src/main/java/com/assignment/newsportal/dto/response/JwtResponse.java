@@ -2,11 +2,18 @@ package com.assignment.newsportal.dto.response;
 
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
 import java.util.List;
 
-public class JwtResponse {
+public class JwtResponse implements Serializable {
+    @JsonProperty("accessToken")
     private String token;
+
+    @JsonProperty("tokenType")
     private String type = "Bearer";
+
     private Long id;
     private String username;
     private String email;

@@ -1,5 +1,6 @@
 package com.assignment.newsportal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.stereotype.Component;
 
@@ -8,12 +9,13 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Component
 public class TopicDTO implements Serializable {
     private Long topicId;
 
     @JsonProperty(value="topic")
-    @NotBlank(message = "Topic is mandatory.")
+    @NotBlank(message = "Please provide topic name.")
     private String topic;
 
     public TopicDTO() {

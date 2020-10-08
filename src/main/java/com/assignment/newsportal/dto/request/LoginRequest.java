@@ -1,20 +1,19 @@
 package com.assignment.newsportal.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import javax.validation.constraints.NotBlank;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class LoginRequest {
-    @NotBlank(message="Email is mandatory.")
+
+    @NotBlank(message="Please provide email.")
     private String email;
 
-    @NotBlank(message="Password is mandatory.")
+    @NotBlank(message="Please provide password.")
     private String password;
 
     public LoginRequest() {
-    }
-
-    public LoginRequest(@NotBlank(message = "Email is mandatory.") String email, @NotBlank(message = "Password is mandatory.") String password) {
-        this.email = email;
-        this.password = password;
     }
 
     public String getEmail() {

@@ -61,8 +61,10 @@ public class UserTopicService {
             return null;
         }
         Topic topic = topicRepo.findBytopic(name).orElse(null);
-        if (topic == null || !topic.getActive())
+        if (topic == null || !topic.getActive()) {
             logger.info("Topic {} does not exist", name);
+            return null;
+        }
 
         UserTopicMap userTopicMap=userTopicRepo.findbyname(userId, name).orElse(null);
         if((userTopicMap!=null)&&(userTopicMap.getIsActive())) {
@@ -81,10 +83,12 @@ public class UserTopicService {
 
 
         User user = userRepo.findByUserId(userId).orElse(null);
-        userTopicMap = new UserTopicMap(userId, user.getName(), topic.getTopicId(),name, true);
-        userTopicMap.setCreatedBy(userId);
-        userTopicMap.setUpdatedBy(userId);
-        return userTopicRepo.save(userTopicMap);
+            UserTopicMap nw = new UserTopicMap(userId, user.getName(), topic.getTopicId(), name, true);
+            nw.setCreatedBy(userId);
+            nw.setUpdatedBy(userId);
+// nw           return userTopicRepo.save(userTopicMap);
+
+        return userTopicRepo.save(nw);
     }
     public Page<UserTopicMap> getTopics(Long userId, Pageable pageable) {
      return userTopicRepo.getTopics(userId,pageable);
