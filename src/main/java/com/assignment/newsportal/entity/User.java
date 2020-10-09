@@ -9,9 +9,7 @@ import java.util.Set;
 
 @Entity
 @Table(name="users")
-//@Data
-//@AllArgsConstructor
-//@NoArgsConstructor
+
 public class User extends Common {
 
     @Id
@@ -28,33 +26,12 @@ public class User extends Common {
     @Column(name="password")
     private String pwd;
 
-//    @Column(name="roles")
-    //Set<Role> roles;
     @Column(name="roles")
     @Enumerated(EnumType.STRING)
     private ERole role;
 
-//    @Column(name="roles")
-//    Set<String>rol;
-
-
-
-    
     @Column(name="is_active")
     private boolean isActive;
-
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
-//    private Set<Posts> posts;
-//
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
-//    private Set<UserTopicMap> topics;
-//    @Column(name="roles")
-//    public Set<String> change(Set<Role> roles){
-//        Set<String>rol=new HashSet<>();
-//        roles.forEach(role -> {rol.add(role.getName().name());});
-//
-//       return rol;
-//    }
 
     public User() {
     }
@@ -77,10 +54,8 @@ public class User extends Common {
         this.name = name;
         this.email = email;
         this.pwd = pwd;
-//        this.roles = roles;
         this.role=role;
         this.isActive = isActive;
-//        roles.forEach(role -> {rol.add(role.getName().name());});
     }
 
     public Long getUserId() {
@@ -115,9 +90,7 @@ public class User extends Common {
         this.pwd = pwd;
     }
 
-//    public Set<Role> getRoles() {
-//        return roles;
-//    }
+
 
     public Set<ERole> getRoles() {
         Set<ERole> s=new HashSet<>();
@@ -125,9 +98,7 @@ public class User extends Common {
         return s;
     }
 
-//    public void setRoles(Set<Role> roles) {
-//        this.roles = roles;
-//    }
+
 
     public boolean isActive() {
         return isActive;
@@ -136,19 +107,6 @@ public class User extends Common {
     public void setActive(boolean active) {
         isActive = active;
     }
-
-    //private Boolean isActive;
-    //@Embedded
-   // private Common common= new Common();
-
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
-//    private Set<Posts> posts;
-
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user",cascade = CascadeType.ALL)
-//    private Set<UserTopicMap> topics;
-
-
-
 
 
 }

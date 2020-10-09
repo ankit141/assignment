@@ -1,14 +1,10 @@
 package com.assignment.newsportal.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 
 import java.util.Date;
 
-//@Data
-//@NoArgsConstructor
-//@AllArgsConstructor
+
 public class ErrorDetails {
 
     private Date date;
@@ -19,14 +15,7 @@ public class ErrorDetails {
 
     private String message;
 
-//    private String path;
 
-//    public ErrorDetails(Date date, String status, String error, String message, String path) {
-//        this.date = date;
-//        this.status = status;
-//        this.error = error;
-//        this.message = message;
-//        this.path = path;
 
     public ErrorDetails(Date date, String status, String error, String message) {
         this.date = date;
@@ -34,7 +23,6 @@ public class ErrorDetails {
         this.error = error;
         this.message = message;
     }
-//    }
 
     public ErrorDetails() {
     }
@@ -71,13 +59,7 @@ public class ErrorDetails {
         this.message = message;
     }
 
-//    public String getPath() {
-//        return path;
-//    }
-//
-//    public void setPath(String path) {
-//        this.path = path;
-//    }
+
 
 
 }

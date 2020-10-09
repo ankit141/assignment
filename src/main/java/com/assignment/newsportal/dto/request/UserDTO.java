@@ -22,22 +22,16 @@ public class UserDTO implements Serializable {
     private Long userId;
     @JsonProperty("name")
     @NotBlank(message = "Please provide name.")
-    //@NotEmpty(message = "Name cannot be empty")
     private String name;
 
     @JsonProperty("email")
     @NotBlank(message="Please provide email.")
     private String email;
 
-//    @JsonProperty(value = "password")
-//    @NotBlank(message="Password is mandatory.")
-//    private String pwd;
 
-//    @JsonProperty(value = "roles")
-//    private Set<String> roles;
-      @JsonProperty(value = "role")
-      @NotBlank
-        private String role;
+    @JsonProperty(value = "role")
+    @NotBlank
+    private String role;
     public UserDTO() {
     }
 

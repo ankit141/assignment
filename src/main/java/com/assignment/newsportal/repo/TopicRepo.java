@@ -22,10 +22,6 @@ public interface TopicRepo extends JpaRepository<Topic, Long> {
 
     @Query(value="Select t from Topic t where t.topic=?1 and t.isActive=true")
     Optional<Topic> findBytopic(String topic);
-//
-//    @Query(value = "Select t.isActive from Topic t where t.topic=?1")
-//    boolean existsByTopic(String topic);
-
 
     @Query("Select h from Hashtag h where h.topicId=?1 and h.isActive=true")
     Page<Hashtag> getTopicHashtags(Long topicId, Pageable pageable);

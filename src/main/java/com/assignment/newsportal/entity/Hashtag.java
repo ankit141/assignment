@@ -14,9 +14,7 @@ public class Hashtag extends Common{
     @Column(name="hashtag_id")
     private Long hashtagId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name="user_id",referencedColumnName = "user_id")
-//    private Topics topic;
+
 
     @Column(name="topic_id")
     private Long topicId;
@@ -31,11 +29,7 @@ public class Hashtag extends Common{
     public Hashtag() {
     }
 
-//    public Hashtag(Long hashtagId, String hashtag, Boolean isActive) {
-//        this.hashtagId = hashtagId;
-//        this.hashtag = hashtag;
-//        this.isActive = isActive;
-//    }
+
 
     public Hashtag(Long topicId, String hashtag, Boolean isActive) {
 

@@ -17,11 +17,7 @@ public class Post extends Common{
     @Column(name = "post_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long postId;
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumns({
-//            @JoinColumn(name="user_id",referencedColumnName = "user_id")
-//    })
-//    private Users user;
+
     @Column(name="user_id")
     private Long userId;
 

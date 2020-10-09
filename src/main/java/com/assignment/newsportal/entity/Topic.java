@@ -21,14 +21,9 @@ public class Topic extends Common{
 
 
       private Boolean isActive;
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "topic",cascade = CascadeType.ALL)
-//    private List<Hashtags> hashtags;
-//
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "topic",cascade = CascadeType.ALL)
-//    private List<PostHashtagMap> users;
 
 
-    public Topic() {
+      public Topic() {
     }
 
     public Topic(Long topicId, String topic, Boolean isActive) {

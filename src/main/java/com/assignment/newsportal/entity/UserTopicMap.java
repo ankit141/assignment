@@ -9,19 +9,7 @@ import javax.persistence.*;
 @Entity
 @Table(name="user_topic_map")
 public class UserTopicMap extends Common{
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumns({
-//            @JoinColumn(name="user_id", referencedColumnName="user_id"),
-//            @JoinColumn(name="name", referencedColumnName="name")
-//    })
-//    private Users user;
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumns({
-//            @JoinColumn(name="topicId", referencedColumnName="topicId"),
-//            @JoinColumn(name="topic", referencedColumnName="topic")
-//    })
-//    private Topics topic;
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)

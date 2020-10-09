@@ -14,16 +14,7 @@ import java.time.LocalDateTime;
 @MappedSuperclass
 public abstract class Common {
 
-    /*@Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private T id;
-
-     */
-
-
     @JsonIgnore
-    //@JsonFormat(pattern = Constants.TIMESTAMP)
     private LocalDateTime createdAt;
 
     @JsonIgnore
@@ -48,12 +39,6 @@ public abstract class Common {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /*public AbstractEntity<T> setId(T id) {
-        this.id = id;
-        return this;
-    }
-
-     */
 
     public Common() {
     }

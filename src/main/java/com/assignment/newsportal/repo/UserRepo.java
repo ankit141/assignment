@@ -15,18 +15,9 @@ import java.util.Optional;
 @Repository
 public interface UserRepo extends JpaRepository<User, Long> {
 
-//    @Query(value = "Select u from User u where u.UserId = ?1")
-//    User getUser(String userId);
-
-//    @Query(value = "Select emp from User emp where emp.uniqueId=?1")
-//    User getUserByUniqueId(String uniqueId);
-//
-//
-//
-//    @Query(value = "Select emp from User emp where emp.departmentId IN :list and emp.isActive=1")
-//    List<User> getUsersOfCompany(List<Long> list);
 
     Optional<User> findByName(String name);
+
     Optional<User> findByUserId(Long userId);
 
     @Query("Select post from Post post where post.userId=?1 and post.isActive=true order by post.updatedAt desc")

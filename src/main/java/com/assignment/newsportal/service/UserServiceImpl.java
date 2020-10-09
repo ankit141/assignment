@@ -1,12 +1,10 @@
 package com.assignment.newsportal.service;
 
-import com.assignment.newsportal.Exception.MissingDetailException;
 import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.dto.request.UserDTO;
 import com.assignment.newsportal.dto.update.UserUpdate;
 import com.assignment.newsportal.entity.*;
 import com.assignment.newsportal.repo.UserRepo;
-//import com.assignment.newsportal.service.interfaces.UserService;
 import com.assignment.newsportal.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -38,28 +36,6 @@ public class UserServiceImpl  {
 
     @Autowired
     AuthService authService;
-
-
-
-
-//    @Override
-//    @Transactional
-//    public UserDetailsImpl loadUserByUsername(String name) throws UsernameNotFoundException {
-//        User user = userRepo.findByName(name)
-//                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + name));
-//
-//        return UserDetailsImpl.build(user);
-//    }
-
-//    public UserDetailsImpl loadUserById(Long userId) throws UsernameNotFoundException {
-//        User user = userRepo.findByUserId(userId).orElse(null);
-////                .orElseThrow(() -> new UsernameNotFoundException("User Not Found with Id: " + userId));
-//         if(user==null||!user.isActive())
-//             throw new UsernameNotFoundException("User Not Found with Id: "+ userId);
-//        return UserDetailsImpl.build(user);
-//    }
-
-
 
     public UserDTO register(User user) {
 
@@ -96,8 +72,7 @@ public class UserServiceImpl  {
 
     @CachePut(cacheNames = "user",key="#userId")
     public UserDTO updateUserDetails(Long userId, UserUpdate userUpdate) {
-//        if(userUpdate.getName().equals("")||userUpdate.getEmail().equals(""))
-//            throw new MissingDetailException("All Details are compulsory");
+
         User user=userRepo.findByUserId(userId).orElse(null);
         if(user==null||!user.isActive())
             throw new NotFoundException("User with id "+userId+" does not exist");

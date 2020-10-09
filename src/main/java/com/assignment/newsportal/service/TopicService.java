@@ -2,7 +2,6 @@ package com.assignment.newsportal.service;
 
 
 import com.assignment.newsportal.Exception.DuplicateDataException;
-import com.assignment.newsportal.Exception.MissingDetailException;
 import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.dto.request.TopicDTO;
 import com.assignment.newsportal.entity.Hashtag;
@@ -12,8 +11,6 @@ import com.assignment.newsportal.repo.TopicRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 
@@ -25,14 +22,13 @@ public class TopicService {
 
 
     public Topic createTopic(String t,Long userId) {
-//        if (t.equals(""))
-//            throw new MissingDetailException("Topic is mandatory.");
+
         Topic topic = topicRepo.findBytopic(t).orElse(null);
         if ((topic != null)&&(topic.getActive())) {
             throw new DuplicateDataException("Topic is already present.");
 
         }
-        else if((topic!=null)&&(topic.getActive()==false)) {
+        else if((topic!=null)&&(!topic.getActive())) {
             topic.setActive(true);
             topic.setCreatedBy(userId);
             topic.setUpdatedBy(userId);
@@ -65,9 +61,7 @@ public class TopicService {
         Topic topic= topicRepo.findBytopicid(topicId).orElse(null);
         if(topic==null||!topic.getActive())
             throw new NotFoundException("Topic Not Found with Id: " + topicId);
-//        if(topicDTO.getTopic().equals("")){
-//            throw new MissingDetailException("Topic is mandatory.");
-//        }
+
         if(topic.getTopic().equals(topicDTO.getTopic()))
             throw new DuplicateDataException("Topic is already present.");
         topic.setTopic(topicDTO.getTopic());

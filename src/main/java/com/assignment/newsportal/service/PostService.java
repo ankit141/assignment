@@ -65,78 +65,11 @@ public class PostService {
 
     }
 
-//    @Transactional
-//    public Post vote(Long postId, Long val, Long userId) {
-//        Post post = postRepo.findByPostId(postId).orElse(null);
-//        if (post == null || !post.getActive())
-//            throw new NotFoundException("Post with id " + postId + " doesn't exist");
-//        VoteStatus voteStatus = voteStatusRepo.find(userId, postId).orElse(null);
-//
-//        if((val!=1)&&(val!=-1))
-//        throw new InvalidRequestException("Options are 1 for upvote and -1 for downvote.");
-//
-//        if (voteStatus == null) {
-//            voteStatus = new VoteStatus(userId, postId, true, false, false);
-//
-//            if (val == 1) {
-//                voteStatus.setUpvoted(true);
-//                voteStatus.setDownvoted(false);
-//                post.setUpvotes(post.getUpvotes() + 1);
-//                voteStatusRepo.save(voteStatus);
-//
-//            }
-//            else if (val == -1) {
-//
-//                voteStatus.setUpvoted(false);
-//                voteStatus.setDownvoted(true);
-//                post.setDownvotes(post.getDownvotes() + 1);
-//                voteStatusRepo.save(voteStatus);
-//
-//
-//            }
-////            else {
-////                throw new InvalidRequestException("Options are 1 for upvote and -1 for downvote.");
-////            }
-//        } else if (voteStatus != null) {
-//
-//            if (val == 1 && voteStatus.getUpvoted()) {
-//                throw new InvalidRequestException("You have already upvoted.");
-//
-//            } else if (val == 1 && (voteStatus.getDownvoted())) {
-//                voteStatus.setUpvoted(true);
-//                voteStatus.setDownvoted(false);
-//                post.setUpvotes(post.getUpvotes() + 1);
-//                post.setDownvotes(post.getDownvotes() - 1);
-//                voteStatusRepo.save(voteStatus);
-//                logger.info("Changed downvote to upvote");
-//
-//            } else if ((val == -1) && (voteStatus.getDownvoted())) {
-//                throw new InvalidRequestException("You have already downvoted.");
-//
-//            } else if ((val == -1) && (voteStatus.getUpvoted())) {
-//                voteStatus.setUpvoted(false);
-//                voteStatus.setDownvoted(true);
-//                post.setUpvotes(post.getUpvotes() - 1);
-//                post.setDownvotes(post.getDownvotes() + 1);
-//                voteStatusRepo.save(voteStatus);
-//                logger.info("Changed upvote to downvote.");
-//
-//
-//            }
-//
-//        }
-//
-//        return postRepo.save(post);
 
-
-//    }
 
     @Transactional
     public Post publish(PostDTO postDTO, Long userId) {
 
-//        if(postDTO.getTitle().equals("")){
-//            throw new MissingDetailException("Post title is incomplete");
-//        }
         if (postDTO.getTitle() == null)
             postDTO.setTitle("");
         if (postDTO.getBody() == null)
@@ -228,7 +161,6 @@ public class PostService {
 
         if (searchVal.startsWith("#")) {
             Set<Long> uniquePostIds = postHashtagRepo.findByHashtag(searchVal.substring(1).toLowerCase());
-//            Set<Long> uniquePostIds= postIds.stream().collect(Collectors.toSet());
             return postRepo.findByHashtag(uniquePostIds, pageable);
 
         }
@@ -237,7 +169,7 @@ public class PostService {
         Set<Long> UniqueIds = Stream.concat(PostHashIds.stream(), PostTitleIds.stream())
                 .collect(Collectors.toSet());
         return postRepo.getSearchedPosts(UniqueIds, pageable);
-//        return postRepo.findByTitle(searchVal.toLowerCase(), pageable);
+
     }
 
     public Post upvote(Long postId, Long userId) {

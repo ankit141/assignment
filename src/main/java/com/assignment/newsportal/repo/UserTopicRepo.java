@@ -14,10 +14,6 @@ import java.util.Optional;
 @Repository
 public interface UserTopicRepo extends JpaRepository<UserTopicMap, Long> {
 
-//
-//    @Query(value = "Select u.isActive from UserTopicMap u where u.userId=?1 and u.topicId=?2")
-//    boolean existsByTopicId(Long userId, Long topicId);
-
 
     @Query(value = "Select u from UserTopicMap u where u.isActive=true and u.userId=?1")
     Page<UserTopicMap> getTopics(Long userId, Pageable pageable);

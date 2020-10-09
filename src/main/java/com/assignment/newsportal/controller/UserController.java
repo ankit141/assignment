@@ -7,25 +7,21 @@ import com.assignment.newsportal.dto.response.JwtResponse;
 import com.assignment.newsportal.dto.response.MessageResponse;
 import com.assignment.newsportal.dto.update.UserUpdate;
 import com.assignment.newsportal.entity.*;
-//import com.assignment.newsportal.entity.Role;
-//import com.assignment.newsportal.repo.RoleRepo;
 import com.assignment.newsportal.repo.UserRepo;
 import com.assignment.newsportal.repo.UserTopicRepo;
 import com.assignment.newsportal.security.jwt.JwtUtils;
 import com.assignment.newsportal.service.AuthService;
 import com.assignment.newsportal.service.UserDetailsImpl;
 import com.assignment.newsportal.service.UserServiceImpl;
-//import com.assignment.newsportal.service.interfaces.UserService;
 import com.assignment.newsportal.service.UserTopicService;
 import com.assignment.newsportal.util.PostUtil;
 import com.assignment.newsportal.util.UserTopicUtil;
 import com.assignment.newsportal.util.UserUtil;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,17 +29,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
+
 
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -91,20 +84,12 @@ public class UserController {
     @Autowired
     AuthService authService;
 
-//    @Autowired
-//    RoleRepo roleRepo;
-//    @Autowired
-//    ModelMapper modelMapper;
 
     @Value("${example.app.adminMail}")
     private String adminMail;
 
     @Value("${example.app.adminPwd}")
     private String adminPwd;
-
-//    @Value("${example.app.pageSizeDefault}")
-//    private Integer pageSize;
-
 
 
 
@@ -145,7 +130,6 @@ public class UserController {
 
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-//        userDetails= authService.loadUserById(userDetails.getuserId());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateJwtToken(authentication);
@@ -195,14 +179,21 @@ public class UserController {
 
     @GetMapping(value="/posts")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<?> getMyPosts( @PageableDefault(size = 15) Pageable pageable){
+    public ResponseEntity<?> getMyPosts( @RequestParam(value = "page",defaultValue = "0")int page,
+                                         @RequestParam(value = "size",defaultValue = "10")int size){
 
         Long userId=jwtUtils.getSubject();
 
-
+        Pageable pageable= PageRequest.of(page,size);
         Page<Post> postList = userService.getUserPosts(userId,pageable);
-        if(postList.isEmpty())
-            return new ResponseEntity<>(new MessageResponse("No posts found"),HttpStatus.OK);
+        if(postList.isEmpty()){
+            if(postList.isEmpty()){
+                if(page==0)
+                    throw new NotFoundException("No posts present");
+                throw new NotFoundException("No results in page "+page);
+            }
+        }
+
         List<PostDTO> postDTOS = postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
         return new ResponseEntity<>(postDTOS, HttpStatus.OK);
 
@@ -221,11 +212,19 @@ public class UserController {
 
     @GetMapping(value="/all")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<?> getAllUserDetails(@PageableDefault(size = 15) Pageable pageable){
+    public ResponseEntity<?> getAllUserDetails(@RequestParam(value = "page",defaultValue = "0")int page,
+                                               @RequestParam(value = "size",defaultValue = "10")int size){
 
+
+        Pageable pageable= PageRequest.of(page,size);
         Page<User> userList = userService.getAllUserDetails(pageable);
-        if(userList.isEmpty())
-            return new ResponseEntity<>(new MessageResponse("No users present in the system"),HttpStatus.OK);
+
+            if(userList.isEmpty()){
+                if(page==0)
+                    throw new NotFoundException("No users present");
+                throw new NotFoundException("No results in page "+page);
+            }
+
         List<UserDTO> userDTOS = userList.stream().map(post -> userUtil.convertToDTO(post)).collect(Collectors.toList());
         return new ResponseEntity<>(userDTOS, HttpStatus.OK);
 
@@ -269,12 +268,18 @@ public class UserController {
     }
     @GetMapping(value="/topics")
     @PreAuthorize("hasRole('CONSUMER') or hasRole('MODERATOR')")
-    public ResponseEntity<?> getTopicsFollowed (@PageableDefault(size = 15) Pageable pageable){
+    public ResponseEntity<?> getTopicsFollowed (@RequestParam(value = "page",defaultValue = "0")int page,
+                                                @RequestParam(value = "size",defaultValue = "10")int size){
 
         Long userId= jwtUtils.getSubject();
+        Pageable pageable= PageRequest.of(page, size);
         Page<UserTopicMap> list =  userTopicService.getTopics(userId,pageable);
-        if(list.isEmpty())
-            return new ResponseEntity<>(new MessageResponse("You do not follow any topics"),HttpStatus.OK);
+
+        if(list.isEmpty()){
+            if(page==0)
+                throw new NotFoundException("No topics followed.");
+            throw new NotFoundException("No results in page "+page);
+        }
         List<TopicDTO> topicDTOS = list.stream().map(ele -> userTopicUtil.convertToDTO(ele)).collect(Collectors.toList());
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
@@ -291,31 +296,41 @@ public class UserController {
 
     @GetMapping(value="/{userId}/topics")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<?> getUserTopics(@PathVariable @NotNull Long userId,@PageableDefault(size = 15) Pageable pageable){
+    public ResponseEntity<?> getUserTopics(@PathVariable @NotNull Long userId,@RequestParam(value = "page",defaultValue = "0")int page,
+                                           @RequestParam(value = "size",defaultValue = "10")int size){
 
         User user=userRepo.findByUserId(userId).orElse(null);
         if(user==null||user.isActive()==false)
             throw new NotFoundException("User does not exist");
 
+        Pageable pageable= PageRequest.of(page,size);
         Page<UserTopicMap> list =  userTopicService.getTopics(userId,pageable);
-        if(list.isEmpty())
-            return new ResponseEntity<>(new MessageResponse(" User doesn't follow any topics"),HttpStatus.OK);
+        if(list.isEmpty()){
+            if(page==0)
+                throw new NotFoundException("No topics followed.");
+            throw new NotFoundException("No results in page "+page);
+        }
         List<TopicDTO> topicDTOS = list.stream().map(ele -> userTopicUtil.convertToDTO(ele)).collect(Collectors.toList());
         return new ResponseEntity<>(topicDTOS, HttpStatus.OK);
     }
 
     @GetMapping(value="/{userId}/posts")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<?> getUserPosts(@PathVariable @NotNull Long userId,@PageableDefault(size = 15) Pageable pageable){
+    public ResponseEntity<?> getUserPosts(@PathVariable @NotNull Long userId,@RequestParam(value = "page",defaultValue = "0")int page,
+                                          @RequestParam(value = "size",defaultValue = "10")int size){
 
 
         User user=userRepo.findByUserId(userId).orElse(null);
         if(user==null||user.isActive()==false)
             throw new NotFoundException("User does not exist");
 
+        Pageable pageable= PageRequest.of(page,size);
         Page<Post> postList = userService.getUserPosts(userId,pageable);
-        if(postList.isEmpty())
-            return new ResponseEntity<>(new MessageResponse("No posts found"),HttpStatus.OK);
+        if(postList.isEmpty()){
+            if(page==0)
+                throw new NotFoundException("No posts present.");
+            throw new NotFoundException("No results in page "+page);
+        }
         List<PostDTO> postDTOS = postList.stream().map(post -> postUtil.convertToDTO(post)).collect(Collectors.toList());
         return new ResponseEntity<>(postDTOS, HttpStatus.OK);
 

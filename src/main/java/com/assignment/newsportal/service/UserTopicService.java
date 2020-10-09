@@ -33,27 +33,7 @@ public class UserTopicService {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-//    public UserTopicMap add(Long userId, Long topicId) {
-//        Topic topic = topicRepo.findBytopicid(topicId).orElse(null);
-//        if (topic == null || !topic.getActive())
-//            throw new NotFoundException("Topic with id " + topicId + " doesn't exist.");
-//
-//        UserTopicMap userTopicMap=userTopicRepo.find(userId, topicId).orElse(null);
-//        if((userTopicMap!=null)&&(userTopicMap.getIsActive())) {
-//            logger.info("Topic {} is already followed by you.", );
-//            return null;
-//        }
-//
-//        if((userTopicMap!=null)&&(userTopicMap.getIsActive()==false)) {
-//
-//            userTopicMap.setIsActive(true);
-//            return userTopicRepo.save(userTopicMap);
-//
-//        }
-//        User user = userRepo.findByUserId(userId).orElse(null);
-//        userTopicMap = new UserTopicMap(userId, user.getName(), topicId, topic.getTopic(), true);
-//        return userTopicRepo.save(userTopicMap);
-//    }
+
 
     public UserTopicMap add(Long userId, String name) {
         if(name.equals("")) {
@@ -72,7 +52,7 @@ public class UserTopicService {
             logger.info("Topic {} is already followed by you.", name);
             return null;
         }
-        if((userTopicMap!=null)&&(userTopicMap.getIsActive()==false)) {
+        if((userTopicMap!=null)&&(!userTopicMap.getIsActive())) {
 
             userTopicMap.setIsActive(true);
             userTopicMap.setCreatedBy(userId);
@@ -86,7 +66,6 @@ public class UserTopicService {
             UserTopicMap nw = new UserTopicMap(userId, user.getName(), topic.getTopicId(), name, true);
             nw.setCreatedBy(userId);
             nw.setUpdatedBy(userId);
-// nw           return userTopicRepo.save(userTopicMap);
 
         return userTopicRepo.save(nw);
     }

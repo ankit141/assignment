@@ -31,18 +31,6 @@ public class PostHashtagMap extends Common{
     @Column(name="user_id")
     private Long userId;
 
-//    @Column(name="is_active")
-//    private Boolean isActive;
-
-//    public PostHashtagMap(Long id, Long postId, Long hashtagId, String hashtag, Long topic_id, Long userId, Boolean isActive) {
-//        this.id = id;
-//        this.postId = postId;
-//        this.hashtagId = hashtagId;
-//        this.hashtag = hashtag;
-//        this.topic_id = topic_id;
-//        this.userId = userId;
-//        this.isActive = isActive;
-//    }
 
     public PostHashtagMap() {
     }
@@ -87,8 +75,6 @@ public class PostHashtagMap extends Common{
         this.hashtag = hashtag;
     }
 
-
-
     public Long getUserId() {
         return userId;
     }
@@ -96,14 +82,6 @@ public class PostHashtagMap extends Common{
     public void setUserId(Long userId) {
         this.userId = userId;
     }
-
-//    public Boolean getActive() {
-//        return isActive;
-//    }
-//
-//    public void setActive(Boolean active) {
-//        isActive = active;
-//    }
 
     public Long getTopicId() {
         return topicId;
