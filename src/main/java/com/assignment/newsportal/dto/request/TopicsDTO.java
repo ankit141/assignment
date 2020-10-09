@@ -10,7 +10,7 @@ import java.util.Set;
 public class TopicsDTO {
 
     @JsonProperty
-    @NotBlank(message = "Please provide topics to add.")
+
     private Set<String> topics;
 
     public TopicsDTO() {

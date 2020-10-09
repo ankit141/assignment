@@ -67,7 +67,7 @@ public class HashtagController {
 
     @PutMapping(value = "/hashtag/{hashtagId}")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<?> updateHashtag(@PathVariable @NotNull Long hashtagId, @RequestBody HashtagDTO hashtagDTO) {
+    public ResponseEntity<?> updateHashtag(@PathVariable @NotNull Long hashtagId, @RequestBody @Valid HashtagDTO hashtagDTO) {
 
         Long userId= jwtUtils.getSubject();
         Hashtag hashtag = hashtagService.updateHashtag(hashtagId, hashtagDTO,userId);

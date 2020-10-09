@@ -250,7 +250,7 @@ public class UserController {
     public ResponseEntity<?> addMulTopics(@RequestBody @Valid TopicsRequest topicsRequest){
         Long userId= jwtUtils.getSubject();
         Set<String> topics= topicsRequest.getFollow();
-        if(topics.isEmpty())
+        if(topics==null||topics.isEmpty())
             throw new InvalidRequestException("No topics added");
         List<TopicDTO>topicDTOS= new ArrayList<>();
 

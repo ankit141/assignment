@@ -1,6 +1,7 @@
 package com.assignment.newsportal.controller;
 
 
+import com.assignment.newsportal.Exception.InvalidRequestException;
 import com.assignment.newsportal.Exception.NotFoundException;
 import com.assignment.newsportal.dto.request.HashtagDTO;
 import com.assignment.newsportal.dto.request.TopicDTO;
@@ -48,7 +49,7 @@ public class TopicController {
 
     @PostMapping(value="/create")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<TopicDTO> createTopic(@Valid @RequestBody TopicDTO topicDTO){
+    public ResponseEntity<TopicDTO> createTopic( @RequestBody @Valid TopicDTO topicDTO){
         Long userId= jwtUtils.getSubject();
       String topicName=topicDTO.getTopic();
       Topic topic=topicService.createTopic(topicName,userId);
@@ -59,12 +60,17 @@ public class TopicController {
 
     @PostMapping(value="/createmul")
     @PreAuthorize("hasRole('MODERATOR')")
-    public ResponseEntity<List<TopicDTO>> createTopics(@Valid @RequestBody TopicsDTO topicsDTO){
+    public ResponseEntity<List<TopicDTO>> createTopics( @RequestBody @Valid TopicsDTO topicsDTO){
+        
         Long userId= jwtUtils.getSubject();
         Set<String> topics=topicsDTO.getTopics();
+        if(topics==null)
+            throw new InvalidRequestException("Please enter topics to add.");
         List<TopicDTO> topicDTOS=new ArrayList<>();
 
         for(String t: topics){
+            if(t.equals(""))
+                throw new InvalidRequestException("Please enter full topic names.");
             Topic topic= topicService.createTopic(t,userId);
             TopicDTO topicDTO= topicUtil.convertToDTO(topic);
             topicDTOS.add(topicDTO);

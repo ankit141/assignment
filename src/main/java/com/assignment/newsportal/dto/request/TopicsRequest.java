@@ -11,7 +11,6 @@ import java.util.Set;
 public class TopicsRequest {
 
     @JsonProperty
-    @NotBlank(message = "Please enter topics to follow.")
     private Set<String> follow;
 
     public TopicsRequest() {
