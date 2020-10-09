@@ -10,7 +10,6 @@ import java.util.Set;
 public class TopicsDTO {
 
     @JsonProperty
-
     private Set<String> topics;
 
     public TopicsDTO() {
